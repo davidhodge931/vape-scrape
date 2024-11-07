@@ -2,7 +2,7 @@ library(tidyverse)
 library(chromote)
 library(rvest)
 
-url <- "https://www.shosha.co.nz/sour-apple-salty-smart-bar-replacement-pod" #works
+# url <- "https://www.shosha.co.nz/sour-apple-salty-smart-bar-replacement-pod" #works
 # url <- "https://www.shosha.co.nz/tote-aoturoa-green-grape-freebase-e-liquid-30ml" #works 
 # url <- "https://www.shosha.co.nz/brands/freebase-e-liquids-brands/tote-aoturoa-green" #doesn't NOT A PRODUCT
 # url <- "https://www.shosha.co.nz/smok-mag-solo-kit" #works
@@ -11,12 +11,19 @@ url <- "https://www.shosha.co.nz/sour-apple-salty-smart-bar-replacement-pod" #wo
 
 url <- "https://www.shosha.co.nz/tote-aoturoa-green-grape-freebase-e-liquid-30ml"
 
-url_html_live <- url |> read_html_live()
+rm(url_html_live)
+
+url_html_live <- url |> 
+  read_html_live()
 
 #name
 name <- url_html_live |> 
   html_elements("h1.productFullDetail-productName-6ZL")  |> 
   html_text2()
+
+if (vctrs::vec_is_empty(name)) name <- NA
+
+name
 
 #brand
 brand <- url_html_live |> 
@@ -25,23 +32,27 @@ brand <- url_html_live |>
   str_sub(4) |> #remove ' by'  
   str_trim()
 
-#category
-url_html_live |> 
-  html_elements("a.breadcrumbs-link-mHX breadcrumbs-text-lAa")   
-  # html_text2()
+if (vctrs::vec_is_empty(brand)) brand <- NA
 
-# url |> 
-#   read_html_live() |> 
-#   html_element("div.productFullDetail-brand-zRg") |> 
-#   html_text2() 
-#   
-# <a class="a.breadcrumbs-link-mHX breadcrumbs-text-lAa"
+brand 
+
+#category
+category <- url_html_live |>
+  html_elements("a.breadcrumbs-link-mHX.breadcrumbs-text-lAa") |> 
+  html_text2() |> 
+  magrittr::extract(2) 
+  # str_subset("Home", negate = TRUE)
+
+# if (vctrs::vec_is_empty(category)) category <- NA
+
+category
 
 #details
 details <- url_html_live |> 
   html_elements(".richContent-root-CMO p") |> 
   html_text2()
 
+#flavour
 flavour_keywords <- glue::glue_collapse(c(
   "Flavor Profile:|Flavor profile:|flavor profile:", 
   "Flavors Profile:|Flavors profile:|flavors profile:", 
@@ -58,6 +69,9 @@ flavour <- details |>
 
 if (vctrs::vec_is_empty(flavour)) flavour <- NA
 
+flavour
+
+#nicotine
 nicotine_keywords <- glue::glue_collapse(c(
   "Nicotine Concentration:|Nicotine concentration:|nicotine concentration:",
   "Nicotine Concentration:|Nicotine concentration:|nicotine concentration:", 
@@ -73,6 +87,7 @@ nicotine <- details |>
 
 if (vctrs::vec_is_empty(nicotine)) nicotine <- NA
 
+#vgpg
 vg_pg_keywords <- glue::glue_collapse(c(
   "VG/PG:|Vg/Pg:|vg/pg:"
 ), sep = "|")
@@ -84,10 +99,20 @@ vg_pg <- details |>
 
 if (vctrs::vec_is_empty(vg_pg)) vg_pg <- NA
 
+name
+brand
+category
+nicotine
+flavour
+vg_pg
+
+#bind together
 tibble(
  name = name,
  brand = brand,
+ category = category,
  nicotine = nicotine,
  flavour = flavour,
  vg_pg = vg_pg,
 ) 
+
