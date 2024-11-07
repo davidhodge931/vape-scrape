@@ -11,10 +11,10 @@ library(rvest)
 
 url <- "https://www.shosha.co.nz/tote-aoturoa-green-grape-freebase-e-liquid-30ml"
 
-rm(url_html_live)
-
 url_html_live <- url |> 
   read_html_live()
+
+Sys.sleep(10) #otherwise category fails
 
 #name
 name <- url_html_live |> 
