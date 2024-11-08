@@ -12,7 +12,7 @@ urls <- readr::read_csv(file = urls_path)
 
 urls <- urls |> 
   pull() |> 
-  magrittr::extract(1:100)
+  magrittr::extract(1:100) #test on 100 urls
 
 d <- map(urls, function(x) {
 
