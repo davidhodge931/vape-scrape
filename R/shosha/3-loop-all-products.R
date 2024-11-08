@@ -8,12 +8,14 @@ library(purrr)
 
 urls_path <- fs::path("data", "shosha_urls", ext = "csv")
 
-urls <- readr::read_csv(file = urls_path) |> 
-  pull() 
+urls <- readr::read_csv(file = urls_path) 
 
-urls <- urls[1:100]
+urls <- urls |> 
+  pull() |> 
+  magrittr::extract(1:100)
 
 d <- map(urls, function(x) {
+
   url_html_live <- x |> 
     read_html_live()
   
