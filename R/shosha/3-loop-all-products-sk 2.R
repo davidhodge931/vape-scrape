@@ -28,9 +28,9 @@ urls <- readr::read_csv(file = urls_path)
 #get urls to loop through 
 urls <- urls |> 
   pull() |> 
-  magrittr::extract(1:nrow(urls)) #loop all
+  # magrittr::extract(1:nrow(urls)) #loop all
   # magrittr::extract(450:nrow(urls)) #test on x urls, products begin at 450, but should add some logic to subset only product url's
-# magrittr::extract(450:455)
+magrittr::extract(450:455)
 
 
 
@@ -124,7 +124,8 @@ get_html_with_retry <- function(url, retries = 3, delay = 10) {
   imap(urls, function(x, i) {
     # Wrap the entire iteration in tryCatch to handle errors anywhere in the loop
     tryCatch({
-      print(paste("Loop number:", i + last_saved_row)) # Adjust loop number based on last saved row - ie if it restarted after error it would be using a last_saved_row > 0
+      # print(paste("Loop number:", i + last_saved_row)) # Adjust loop number based on last saved row - ie if it restarted after error it would be using a last_saved_row > 0
+      print(paste("Loop number:", i)) # Adjust loop number based on last saved row - ie if it restarted after error it would be using a last_saved_row > 0
       
       # Clean up any previous connections
       if (exists("url_html_live")) {
@@ -168,7 +169,8 @@ get_html_with_retry <- function(url, retries = 3, delay = 10) {
       # Append to CSV (write csv if it's the first loop, otherwise append it's not the first loop - so adds new row to the existing file and re-saves)
       # this is so if there is an error and the loop breaks we have saved all data up to that point and the trycatch will then wait for 10mins and start the loop again
       # but from where we left off
-      if (i + last_saved_row == 1) {
+      # if (i + last_saved_row == 1) {
+      if (i == 1) {
         readr::write_csv(current_data, file = f)
       } else {
         readr::write_csv(current_data, file = f, append = TRUE, col_names = FALSE)
@@ -176,7 +178,8 @@ get_html_with_retry <- function(url, retries = 3, delay = 10) {
       
     }, error = function(e) {
       # If any error occurs during the loop then sleep for 10 minutes, and retry
-      message("Error occurred in iteration ", i + last_saved_row, ": ", e$message)
+      # message("Error occurred in iteration ", i + last_saved_row, ": ", e$message)
+      message("Error occurred in iteration ", i, ": ", e$message)
       message("Sleeping for 10 minutes and will retry this iteration.")
       Sys.sleep(600)
       return(NULL)  # This will retry the current iteration after the 10-minute sleep
