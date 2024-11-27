@@ -30,11 +30,8 @@ urls <- urls |>
   pull() |> 
   magrittr::extract(1:nrow(urls)) #loop all
   # magrittr::extract(450:nrow(urls)) #test on x urls, products begin at 450, but should add some logic to subset only product url's
-<<<<<<< HEAD
   # magrittr::extract(450:550)
-=======
-# magrittr::extract(450:455)
->>>>>>> 9601446ef0d8fbe23febd2f7ab242f2e6c12c256
+  # magrittr::extract(450:455)
 
 
 
