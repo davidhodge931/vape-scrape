@@ -1,7 +1,8 @@
 library(xml2)
 library(tidyverse)
 
-sitemap <- read_xml("https://www.shosha.co.nz/sitemap_nz.xml")
+# sitemap <- read_xml("https://www.shosha.co.nz/sitemap_nz.xml")
+sitemap <- read_xml("sitemap_nz.xml")
 
 nodes <- sitemap |>
   xml_children() |>
