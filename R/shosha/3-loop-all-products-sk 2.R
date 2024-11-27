@@ -30,7 +30,11 @@ urls <- urls |>
   pull() |> 
   magrittr::extract(1:nrow(urls)) #loop all
   # magrittr::extract(450:nrow(urls)) #test on x urls, products begin at 450, but should add some logic to subset only product url's
+<<<<<<< HEAD
   # magrittr::extract(450:550)
+=======
+# magrittr::extract(450:455)
+>>>>>>> 9601446ef0d8fbe23febd2f7ab242f2e6c12c256
 
 
 
@@ -42,7 +46,7 @@ print(bow("https://www.shosha.co.nz/"))
 
 
 # --- Function to wait for elements to appear when html_elements() used --------
-wait_for_elements <- function(url_html_live, selector, timeout = 10, sleep = 1) {
+wait_for_elements <- function(url_html_live, selector, timeout = 3, sleep = 2) {
   start_time <- Sys.time()
   while (TRUE) { # This sets up an infinite loop that will keep trying to extract the elements. The loop will only exit when the elements are found OR the timeout expires.
     # Try to extract the elements
@@ -56,6 +60,7 @@ wait_for_elements <- function(url_html_live, selector, timeout = 10, sleep = 1) 
     
     # Otherwise, wait and we will have another crack
     Sys.sleep(sleep)
+    cat("---------- Didn't get html elements for: ", selector, ". It may not exist, but having another go ----------", "\n")
   }
 }
 # ------------------------------------------------------------------------------
@@ -68,7 +73,7 @@ wait_for_elements <- function(url_html_live, selector, timeout = 10, sleep = 1) 
 # if chromote connection fails and uses wait_for_elements() above to wait 
 # until elements are retrieved (since sometimes they are not retrieved 
 # on the first go for some reason)
-get_html_with_retry <- function(url, retries = 3, delay = 10) {
+get_html_with_retry <- function(url, retries = 3, delay = 5) {
   
   attempt <- 1
   while(attempt <= retries) { # loop for number of iterations set in retries 
@@ -156,8 +161,10 @@ get_html_with_retry <- function(url, retries = 3, delay = 10) {
       category <- page_data$category
       details <- page_data$details
      
-      print(name) #so we can see how we are tracking
-      print(category) #so we can see how we are tracking
+      print(paste("URL:",x))
+      print(paste("Product name:", name)) #so we can see how we are tracking
+      print(paste("Product category:", category)) #so we can see how we are tracking
+      print(paste("Details (first only printed):", head(details,1)))
       
       # Create a tibble for the current iteration
       current_data <- tibble(
