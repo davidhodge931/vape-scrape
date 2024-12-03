@@ -1,43 +1,29 @@
 library(tidyverse)
 
-shosha <- read_csv("data/2024-11-28 08-55-55/shosha.csv")
+date <- "2024-12-03 10-45-13"
+shosha <- read_csv(glue::glue("data/{date}/shosha.csv"))
 
-shosha |>
-  group_by(category) |> 
-  count()
+shosha
+shosha |> count()
+shosha |> group_by(category) |> count()
 
-flavour_keywords <- glue::glue_collapse(c(
-  "Flavor Profile:|Flavor profile:|flavor profile:", 
-  "Flavors Profile:|Flavors profile:|flavors profile:", 
-  "Flavour Profile:|Flavour profile:|flavour profile:",
-  "Flavours Profile:|Flavours profile:|flavours profile:", 
-  "Flavor:|flavor:", 
-  "Flavour:|flavour:" 
-), sep = "|")
+shosha |> 
+  mutate(nicotine = str_extract(details, pattern)) |> 
+  filter(!is.na(nicotine))
 
-#doesn't work
-shosha |>
-  mutate(
-    flavour = details |>
-      str_subset(flavour_keywords) |>
-      str_remove(flavour_keywords) |>
-      str_trim()
-  )
+nicotine_text <- "(?i)(Nicotine Concentration:|Nicotine concentration:|
+nicotine concentration:|Nicotine Strength:|Nicotine strength:|nicotine strength:|
+Nicotine salt strength:|Nicotine Salt Strength:|nicotine salt strength:|
+Nicotine:|nicotine)\\s?\\d+(\\.\\d+)?\\s?mg/ml\\s?[-/]?\\s?\\d+(\\.\\d+)?\\s?mg/ml"
 
-nicotine_keywords <- glue::glue_collapse(c(
-  "Nicotine Concentration:|Nicotine concentration:|nicotine concentration:",
-  "Nicotine Concentration:|Nicotine concentration:|nicotine concentration:", 
-  "Nicotine Strength:|Nicotine strength:|nicotine strength:", 
-  "Nicotine Strength:|Nicotine strength:|nicotine strength:",
-  "Nicotine:|nicotine:"
-), sep = "|")
+first_number <- "(?i)(?<=\\s|^)(\\d+(\\.\\d+)?)\\s?mg/ml"
 
-#doesn't work
-shosha |>
-  mutate(
-    nicotine = details |>
-      str_subset(nicotine_keywords) |>
-      str_remove(nicotine_keywords) |>
-      str_trim()
-  )
-
+shosha |> 
+  mutate(nicotine = str_extract(details, pattern)) |> 
+  filter(!is.na(nicotine)) |> 
+  mutate(nicotine_lower = as.numeric(str_remove(str_extract(nicotine, first_number), "mg/ml|mg/mL")))  |> 
+  mutate(nicotine2 = str_remove(nicotine, first_number)) |> 
+  mutate(nicotine_upper = as.numeric(str_remove(str_extract(nicotine2, first_number), "mg/ml|mg/mL")))  |>
+  select(-nicotine2) |> 
+  arrange(desc(nicotine_upper))
+  
