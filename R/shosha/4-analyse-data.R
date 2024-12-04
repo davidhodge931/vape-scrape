@@ -37,7 +37,7 @@ d <- shosha |>
   mutate(nicotine_num = nicotine_values |> str_extract_all("\\d+(\\.\\d+)?(?=mg/ml)") %>% map(\(x) as.double(x))) |>
   mutate(nicotine_min = map_dbl(nicotine_num, min)) |>
   mutate(nicotine_max = map_dbl(nicotine_num, max)) |>
-  select(-nicotine_num) |> 
+  select(-nicotine_num, -nicotine_values) |> 
   relocate(details, .after = nicotine_max) 
 
 d |> filter(!is.na(size)) #491 products
@@ -45,4 +45,4 @@ d |> filter(!is.na(vgpg)) #294 products
 d |> filter(!is.na(flavour)) #240 products
 d |> filter(!is.na(nicotine)) #307 products
 
-
+d |> View()
