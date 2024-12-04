@@ -7,18 +7,6 @@ shosha
 shosha |> count()
 shosha |> group_by(category) |> count()
 
-# str_extract(test, "(?i)(Flavor Profile:|Flavour Profile:|Flavor:|Flavour:)(.*?)(?=\n)")
-# str_extract(test, "(?i)(VG/PG:|PG/VG:|VG/PG ratio:|PG/VG ratio:)[\\s]*(\\d{1,2}/\\d{1,2})")
-# pattern <- "(?i)(Flavor Profile:|Flavour Profile:|Flavor:|Flavour:)(.*?)(?=\n|\\|)"
-
-pattern <- "(?i)(VG/PG:|PG/VG:|VG/PG ratio:|PG/VG ratio:)(\\s*\\d+/\\d+)"
-
-# Extract the matches
-matches <- str_extract_all(text, pattern)
-
-# Clean up the output by removing the initial matching phrase (e.g., "VG/PG:", "PG/VG ratio:", etc.)
-matches_clean <- str_remove_all(matches[[1]], "(?i)(VG/PG:|PG/VG:|VG/PG ratio:|PG/VG ratio:)", "")
-
 d <- shosha |> 
   mutate(details2 = details) |> 
   mutate(details2 = str_remove(details2, "(?i)(GET FREE SHIPPING).*")) |> 
