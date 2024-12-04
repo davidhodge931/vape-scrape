@@ -7,6 +7,10 @@ shosha
 shosha |> count()
 shosha |> group_by(category) |> count()
 
+d |> 
+  filter(category == "Hookahs") |> 
+  View()
+
 d <- shosha |> 
   mutate(details2 = details) |> 
   mutate(details2 = str_remove(details2, "(?i)(GET FREE SHIPPING).*")) |> 
@@ -21,8 +25,9 @@ d <- shosha |>
   mutate(size = str_extract(details2, "(Size:.*?)(?=\\n|\\|)")) |> 
   mutate(size = str_remove(size, ", Made in .*")) |>
   mutate(size = str_remove(size, "Size: ")) |> 
-  mutate(details2 = str_remove(details2, "(Size:.*?)(?=\\n|\\|)")) |>
-  
+  mutate(size = str_replace_all(size, "mL", "ml")) |> 
+  mutate(size = str_replace(size, "/", ", ")) |>   
+
   #vgpg
   # mutate(vgpg = str_extract(details2, "(?i)(VG/PG:|PG/VG:|VG/PG ratio:|PG/VG ratio:)[\\s]*(\\d{1,2}/\\d{1,2})")) |> 
   # mutate(vgpg = str_remove(vgpg, "(?i)VG/PG:|PG/VG:|VG/PG ratio:|PG/VG ratio:")) |> 
@@ -57,3 +62,41 @@ d |> filter(!is.na(size)) #491 products
 d |> filter(!is.na(vgpg)) #313 products. Some extra irrelevant ratios
 d |> filter(!is.na(flavour)) #355 products
 d |> filter(!is.na(nicotine)) #307 products
+
+d |> 
+  filter(str_detect(category, "E-Liquids")) |> 
+  View()
+
+d |> 
+  filter(str_detect(category, "E-Liquids")) |> 
+  mutate(nicotine_na = is.na(nicotine)) |> 
+  group_by(nicotine_na) |> 
+  count()
+
+d |> 
+  filter(str_detect(category, "E-Liquids")) |> 
+  mutate(flavour_na = is.na(flavour)) |> 
+  group_by(flavour_na) |> 
+  count()
+
+d |> 
+  filter(str_detect(category, "E-Liquids")) |> 
+  mutate(size_na = is.na(size)) |> 
+  group_by(size_na) |> 
+  count()
+
+###
+d |> 
+  filter(str_detect(category, "E-Liquids")) |> 
+  mutate(nicotine_na = is.na(nicotine)) |> 
+  filter(nicotine_na) 
+
+d |> 
+  filter(str_detect(category, "E-Liquids")) |> 
+  mutate(flavour_na = is.na(flavour)) |> 
+  filter(flavour_na)
+
+d |> 
+  filter(str_detect(category, "E-Liquids")) |> 
+  mutate(size_na = is.na(size)) |> 
+  filter(size_na) 
