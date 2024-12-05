@@ -7,50 +7,50 @@ library(fs)
 library(polite)
 
 # Script breakdown
+# save site
 # 1: new folder generated to store the data for this script run named "%Y-%m-%d %H-%M-%S" in vape-scrape/data/xxxx-xx-xx xx-xx-xx/
 # 2: read in URL's to loop through
 # 3: read in functions to extract html elements with built in error handling/retries "wait_for_elements", and get all the data with error handling/retries and bind to list "get_html_with_retry"
 # 4: loop extract: re-initialise chromote - have a longer sleep after x iterations - save rows to csv as we go - and retry if error occurs in loop
 
-# Generate a unique folder name based on the current date and time
+# Generate a unique folder name and file path
 timestamp <- format(Sys.time(), "%Y-%m-%d %H-%M-%S")  
-folder_path <- fs::path("data", timestamp)
+folder_path <- fs::path("shosha", "data-scraped", timestamp)
 fs::dir_create(folder_path) #create dir to save data into
+f <- fs::path(folder_path, ext = "csv") # file path to save scraped data into
 
-# file paths
-f <- fs::path(folder_path, "shosha", ext = "csv")
-urls_path <- fs::path("data", "shosha_urls", ext = "csv")
+# save the sitemap locally within this folder - and name as shosha-sitemap
+sitemap <- read_xml(fs::path(folder_path, "shosha-sitemap", ext = "xml"))
 
-urls <- readr::read_csv(file = urls_path)
+nodes <- sitemap |>
+  xml_children() |>
+  xml_contents()
+
+urls <- xml_text(nodes) |>
+  str_subset("^https") |>
+  str_subset("/cache/", negate = TRUE) |> 
+  as_tibble() |> 
+  rename(url = value) 
+
+#as products are listed as direct children of https://www.shosha.co.nz/
+#filter so that only urls with 3 slashs are included, as others do not relate to products 
+
+urls <- urls |>
+  mutate(slash_count = str_count(url, pattern = "/")) |>
+  mutate(slash_count_3 = slash_count == 3) |>
+  filter(slash_count_3) |>
+  select(-slash_count, -slash_count_3)
+
+urls <- urls |> pull()
 
 ######################################
 # test
 ######################################
-# urls <- d |> 
-#   filter(str_detect(category, "E-Liquids")) |> 
-#   mutate(nicotine_na = is.na(nicotine)) |> 
-#   filter(nicotine_na) |> 
-#   select(url = name) |> 
-#   mutate(url = glue::glue("https://www.shosha.co.nz/{url}")) 
+urls <- urls[c(340:345)] 
 ######################################
-######################################
-
-#get urls to loop through 
-urls <- urls |> 
-  pull() |> 
-  magrittr::extract(1:nrow(urls)) #loop all
-# magrittr::extract(450:nrow(urls)) #test on x urls, products begin at 450, but should add some logic to subset only product url's
-# magrittr::extract(450:550)
-# magrittr::extract(450:455)
-
-
 
 #show the polite scraping settings for this page - suggests 5 second delay in this case
 print(bow("https://www.shosha.co.nz/"))
-
-
-
-
 
 # --- Function to wait for elements to appear when html_elements() used --------
 wait_for_elements <- function(url_html_live, selector, timeout = 3, sleep = 2) {
@@ -80,7 +80,7 @@ wait_for_elements <- function(url_html_live, selector, timeout = 3, sleep = 2) {
 # if chromote connection fails and uses wait_for_elements() above to wait 
 # until elements are retrieved (since sometimes they are not retrieved 
 # on the first go for some reason)
-get_html_with_retry <- function(url, retries = 3, delay = 10) {
+get_html_with_retry <- function(url, retries = 3, delay = 5) {
   
   attempt <- 1
   while(attempt <= retries) { # loop for number of iterations set in retries 

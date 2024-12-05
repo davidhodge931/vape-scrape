@@ -2,7 +2,7 @@ library(xml2)
 library(tidyverse)
 
 # sitemap <- read_xml("https://www.shosha.co.nz/sitemap_nz.xml")
-sitemap <- read_xml("sitemap_nz.xml")
+sitemap <- read_xml(fs::path("shosha", "sitemap", "shosha-sitemap", ext = "xml"))
 
 nodes <- sitemap |>
   xml_children() |>
@@ -24,7 +24,8 @@ urls <- urls |>
   filter(slash_count_3) |>
   select(-slash_count, -slash_count_3)
 
-urls |> view()
+urls
+# urls |> view()
 
-f <- fs::path("data", "shosha_urls", ext = "csv")
+f <- fs::path("shosha", "data", "shosha_urls", ext = "csv")
 readr::write_csv(urls, file = f)
