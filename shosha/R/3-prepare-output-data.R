@@ -2,15 +2,18 @@ library(tidyverse)
 
 date <- "2024-12-03 10-45-13"
 date <- "2024-12-05 16-05-15"
-shosha <- read_csv(glue::glue("data/{date}/shosha.csv"))
+
+latest_run <- fs::dir_ls(fs::path("shosha", "data-scraped")) |>
+  as_tibble() |>
+  mutate(value = fs::path_sanitize(str_remove(value, fs::path("shosha", "data-scraped") ))) |>
+  slice_max(value) |>
+  pull()
+
+shosha <- read_csv(fs::path("shosha", "data-scraped", latest_run, "data-scraped", ext = "csv"))
 
 shosha
 shosha |> count()
 shosha |> group_by(category) |> count()
-
-# d |> 
-#   filter(category == "Hookahs") |> 
-#   View()
 
 d <- shosha |> 
   mutate(details2 = details) |> 

@@ -105,7 +105,7 @@ get_html_with_retry <- function(url, retries = 3, delay = 5) {
       buttons <- wait_for_elements(url_html_live, "button.tileNicotine-root-syX span") |> 
         html_text2() |> 
         stringr::str_flatten_comma()
-
+      
       #get prod details
       details1 <- wait_for_elements(url_html_live, ".richContent-root-CMO p") |> 
         html_text2() %>% paste(collapse = "| ")
