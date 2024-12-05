@@ -15,9 +15,9 @@ library(polite)
 
 # Generate a unique folder name and file path
 timestamp <- format(Sys.time(), "%Y-%m-%d %H-%M-%S")  
-folder_path <- fs::path("shosha", "data-scraped", timestamp)
+folder_path <- fs::path("shosha", "data", timestamp)
 fs::dir_create(folder_path) #create dir to save data into
-f <- fs::path(folder_path, "data-scraped", ext = "csv") # file path to save scraped data into
+f <- fs::path(folder_path, "scraped", ext = "csv") # file path to save scraped data into
 
 ################################################################################
 # save the sitemap locally within this folder - and name as shosha-sitemap
@@ -100,7 +100,7 @@ get_html_with_retry <- function(url, retries = 3, delay = 5) {
       #get price
       price <- wait_for_elements(url_html_live, "div.productFullDetail-price-p6T") |> 
         html_text2() 
-        
+      
       #get buttons
       buttons <- wait_for_elements(url_html_live, "button.tileNicotine-root-syX span") |> 
         html_text2() |> 

@@ -72,11 +72,11 @@ details <- url_html_live |>
 
 #bind together
 tibble(
- name = name,
- brand = brand,
- category = category,
- price = price,
- buttons = buttons,
- details = details,
+  name = name,
+  brand = brand,
+  category = category,
+  price = price,
+  buttons = buttons,
+  details = details,
 ) 
 
