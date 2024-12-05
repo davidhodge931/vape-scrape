@@ -7,9 +7,9 @@ shosha
 shosha |> count()
 shosha |> group_by(category) |> count()
 
-d |> 
-  filter(category == "Hookahs") |> 
-  View()
+# d |> 
+#   filter(category == "Hookahs") |> 
+#   View()
 
 d <- shosha |> 
   mutate(details2 = details) |> 
@@ -63,9 +63,9 @@ d |> filter(!is.na(vgpg)) #313 products. Some extra irrelevant ratios
 d |> filter(!is.na(flavour)) #355 products
 d |> filter(!is.na(nicotine)) #307 products
 
-d |> 
-  filter(str_detect(category, "E-Liquids")) |> 
-  View()
+# d |> 
+#   filter(str_detect(category, "E-Liquids")) |> 
+#   View()
 
 d |> 
   filter(str_detect(category, "E-Liquids")) |> 
