@@ -14,7 +14,7 @@ url <- "https://www.shosha.co.nz/tote-aoturoa-green-grape-freebase-e-liquid-30ml
 url_html_live <- url |> 
   read_html_live()
 
-Sys.sleep(10) #otherwise category fails
+# Sys.sleep(10) #otherwise category fails
 
 #name
 name <- url_html_live |> 
@@ -41,78 +41,42 @@ category <- url_html_live |>
   html_elements("a.breadcrumbs-link-mHX.breadcrumbs-text-lAa") |> 
   html_text2() |> 
   magrittr::extract(2) 
-  # str_subset("Home", negate = TRUE)
 
-# if (vctrs::vec_is_empty(category)) category <- NA
+if (vctrs::vec_is_empty(category)) category <- NA
 
 category
+
+#price
+price <- url_html_live |>
+  html_elements("div.productFullDetail-price-p6T") |> 
+  html_text2() 
+
+if (vctrs::vec_is_empty(price)) price <- NA
+
+price
+
+#buttons
+buttons <- url_html_live |>
+  html_elements("button.tileNicotine-root-syX span") |> 
+  html_text2() |>
+  stringr::str_flatten_comma()
+
+if (vctrs::vec_is_empty(buttons)) buttons <- NA
+
+buttons
 
 #details
 details <- url_html_live |> 
   html_elements(".richContent-root-CMO p") |> 
   html_text2()
 
-#flavour
-flavour_keywords <- glue::glue_collapse(c(
-  "Flavor Profile:|Flavor profile:|flavor profile:", 
-  "Flavors Profile:|Flavors profile:|flavors profile:", 
-  "Flavour Profile:|Flavour profile:|flavour profile:",
-  "Flavours Profile:|Flavours profile:|flavours profile:", 
-  "Flavor:|flavor:", 
-  "Flavour:|flavour:" 
-), sep = "|")
-
-flavour <- details |> 
-  str_subset(flavour_keywords) |> 
-  str_remove(flavour_keywords) |> 
-  str_trim()
-
-if (vctrs::vec_is_empty(flavour)) flavour <- NA
-
-flavour
-
-#nicotine
-nicotine_keywords <- glue::glue_collapse(c(
-  "Nicotine Concentration:|Nicotine concentration:|nicotine concentration:",
-  "Nicotine Concentration:|Nicotine concentration:|nicotine concentration:", 
-  "Nicotine Strength:|Nicotine strength:|nicotine strength:", 
-  "Nicotine Strength:|Nicotine strength:|nicotine strength:",
-  "Nicotine:|nicotine:"
-), sep = "|")
-  
-nicotine <- details |> 
-  str_subset(nicotine_keywords) |> 
-  str_remove(nicotine_keywords) |> 
-  str_trim()
-
-if (vctrs::vec_is_empty(nicotine)) nicotine <- NA
-
-#vgpg
-vg_pg_keywords <- glue::glue_collapse(c(
-  "VG/PG:|Vg/Pg:|vg/pg:"
-), sep = "|")
-
-vg_pg <- details |> 
-  str_subset(vg_pg_keywords) |> 
-  str_remove(vg_pg_keywords) |> 
-  str_trim()
-
-if (vctrs::vec_is_empty(vg_pg)) vg_pg <- NA
-
-name
-brand
-category
-nicotine
-flavour
-vg_pg
-
 #bind together
 tibble(
  name = name,
  brand = brand,
  category = category,
- nicotine = nicotine,
- flavour = flavour,
- vg_pg = vg_pg,
+ price = price,
+ buttons = buttons,
+ details = details,
 ) 
 
