@@ -1,8 +1,5 @@
 library(tidyverse)
 
-date <- "2024-12-03 10-45-13"
-date <- "2024-12-05 16-05-15"
-
 latest_run <- fs::dir_ls(fs::path("shosha", "data")) |>
   as_tibble() |>
   mutate(value = fs::path_sanitize(str_remove(value, fs::path("shosha", "data") ))) |>
@@ -31,7 +28,7 @@ d <- shosha |>
   mutate(size = str_remove(size, "Size: ")) |> 
   mutate(size = str_replace_all(size, "mL", "ml")) |> 
   mutate(size = str_replace(size, "/", ", ")) |>   
-
+  
   #vgpg
   # mutate(vgpg = str_extract(details2, "(?i)(VG/PG:|PG/VG:|VG/PG ratio:|PG/VG ratio:)[\\s]*(\\d{1,2}/\\d{1,2})")) |> 
   # mutate(vgpg = str_remove(vgpg, "(?i)VG/PG:|PG/VG:|VG/PG ratio:|PG/VG ratio:")) |> 
@@ -39,7 +36,7 @@ d <- shosha |>
   mutate(vgpg = ifelse(vgpg == "character(0)", NA_character_,  vgpg)) |> 
   mutate(vgpg = str_remove_all(vgpg, 'c\\(|\\)|"')) |> 
   mutate(details2 = str_remove(details2, "(?i)(VG/PG:|PG/VG:|VG/PG ratio:|PG/VG ratio:.*?)(?=\\n|\\|)")) |>
-
+  
   #nicotine
   mutate(nicotine = str_extract(details2, "(?i)(Nicotine\\s+(concentration|strength|salt\\sstrength):[^\\n]*)")) |> 
   mutate(nicotine = str_remove(nicotine, "(?i)(Caution:.*)")) |> 

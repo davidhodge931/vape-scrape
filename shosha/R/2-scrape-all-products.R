@@ -6,24 +6,23 @@ library(purrr)
 library(fs)
 library(polite)
 
-# Script breakdown
-# save site
-# 1: new folder generated to store the data for this script run named "%Y-%m-%d %H-%M-%S" in vape-scrape/data/xxxx-xx-xx xx-xx-xx/
-# 2: read in URL's to loop through
-# 3: read in functions to extract html elements with built in error handling/retries "wait_for_elements", and get all the data with error handling/retries and bind to list "get_html_with_retry"
-# 4: loop extract: re-initialise chromote - have a longer sleep after x iterations - save rows to csv as we go - and retry if error occurs in loop
+# 1: read in URL's to loop through
+# 2: read in functions to extract html elements with built in error handling/retries "wait_for_elements", and get all the data with error handling/retries and bind to list "get_html_with_retry"
+# 3: loop extract: re-initialise chromote - have a longer sleep after x iterations - save rows to csv as we go - and retry if error occurs in loop
 
-# Generate a unique folder name and file path
-timestamp <- format(Sys.time(), "%Y-%m-%d %H-%M-%S")  
-folder_path <- fs::path("shosha", "data", timestamp)
-fs::dir_create(folder_path) #create dir to save data into
-f <- fs::path(folder_path, "scraped", ext = "csv") # file path to save scraped data into
+latest_run <- fs::dir_ls(fs::path("shosha", "data")) |>
+  as_tibble() |>
+  mutate(value = fs::path_sanitize(str_remove(value, fs::path("shosha", "data") ))) |>
+  slice_max(value) |>
+  pull()
+
+f <- fs::path("shosha", "data", latest_run, "scraped", ext = "csv") # file path to save scraped data into
 
 ################################################################################
 # save the sitemap locally within this folder - and name as shosha-sitemap
 ################################################################################
 # read_xml("https://www.shosha.co.nz/sitemap_nz.xml") #blocked
-sitemap <- read_xml(fs::path(folder_path, "shosha-sitemap", ext = "xml"))
+sitemap <- read_xml(fs::path("shosha", "data", latest_run, "sitemap_nz", ext = "xml"))
 
 nodes <- sitemap |>
   xml_children() |>
@@ -48,8 +47,8 @@ urls <- urls |> pull()
 
 ######################################
 # test
-# urls <- urls[c(340:345)] 
-######################################
+# urls <- urls[c(340:345)]
+####################################
 
 #show the polite scraping settings for this page - suggests 5 second delay in this case
 print(bow("https://www.shosha.co.nz/"))
