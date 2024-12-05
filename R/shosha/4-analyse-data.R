@@ -1,6 +1,7 @@
 library(tidyverse)
 
 date <- "2024-12-03 10-45-13"
+date <- "2024-12-05 16-05-15"
 shosha <- read_csv(glue::glue("data/{date}/shosha.csv"))
 
 shosha

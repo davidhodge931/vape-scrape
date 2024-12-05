@@ -24,13 +24,14 @@ urls_path <- fs::path("data", "shosha_urls", ext = "csv")
 urls <- readr::read_csv(file = urls_path)
 
 ######################################
-###test###############################
-urls <- d |> 
-  filter(str_detect(category, "E-Liquids")) |> 
-  mutate(nicotine_na = is.na(nicotine)) |> 
-  filter(nicotine_na) |> 
-  select(url = name) |> 
-  mutate(url = glue::glue("https://www.shosha.co.nz/{url}")) 
+# test
+######################################
+# urls <- d |> 
+#   filter(str_detect(category, "E-Liquids")) |> 
+#   mutate(nicotine_na = is.na(nicotine)) |> 
+#   filter(nicotine_na) |> 
+#   select(url = name) |> 
+#   mutate(url = glue::glue("https://www.shosha.co.nz/{url}")) 
 ######################################
 ######################################
 
@@ -79,7 +80,7 @@ wait_for_elements <- function(url_html_live, selector, timeout = 3, sleep = 2) {
 # if chromote connection fails and uses wait_for_elements() above to wait 
 # until elements are retrieved (since sometimes they are not retrieved 
 # on the first go for some reason)
-get_html_with_retry <- function(url, retries = 3, delay = 5) {
+get_html_with_retry <- function(url, retries = 3, delay = 10) {
   
   attempt <- 1
   while(attempt <= retries) { # loop for number of iterations set in retries 
@@ -88,7 +89,7 @@ get_html_with_retry <- function(url, retries = 3, delay = 5) {
       # Attempt to scrape the page using read_html_live
       url_html_live <- read_html_live(url)  # Use rvest read_html_live to scrape the JS generated page
       
-      Sys.sleep(5)  # Polite delay as per: print(bow("https://www.shosha.co.nz/"))
+      Sys.sleep(delay)  # Polite delay as per: print(bow("https://www.shosha.co.nz/"))
       
       #get product name
       name <- url %>% sub(".*/", "",.)
