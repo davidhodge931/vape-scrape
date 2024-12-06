@@ -54,14 +54,13 @@ d <- shosha |>
   
   #price
   #where 2 prices, take the 2nd one. I.e. previous price, new sale price 
-  mutate(price = as.numeric(str_remove(ifelse(str_detect(price, "\n"), word(price, 2, sep = "\n"), price), "\\$"))) |>
+  mutate(price2 = as.numeric(str_remove(ifelse(str_detect(price, "\n"), word(price, 2, sep = "\n"), price), "\\$"))) |>
+  relocate(price2, .after = price) |> 
   
   #clean-up
   mutate(across(where(is.character), str_trim)) |> 
   relocate(details, .after = nicotine_max) |> 
   select(-details2) 
-
-d |> select(name, starts_with("price"))
 
 d |> filter(!is.na(size)) #491 products
 d |> filter(!is.na(vgpg)) #313 products. Some extra irrelevant ratios
