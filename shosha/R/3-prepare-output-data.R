@@ -43,8 +43,6 @@ d <- shosha |>
   mutate(nicotine = str_remove(nicotine, "(?i)(Specifications:.*)")) |>
   mutate(nicotine = str_remove(nicotine, "(?i)(Pod Capacity:.*)")) |> 
   mutate(nicotine = str_extract(nicotine, "^[^|]+")) |> 
-  select(-details2) |> 
-  relocate(details, .after = nicotine) |> 
   mutate(nicotine = str_remove(nicotine, "\\(.*")) |>
   mutate(nicotine = str_replace_all(nicotine, "mg/mL", "mg/ml")) |>  
   mutate(nicotine_type = word(nicotine, 1, sep = ": ")) |> 
@@ -54,19 +52,27 @@ d <- shosha |>
   mutate(nicotine_max = map_dbl(nicotine_num, max)) |>
   select(-nicotine_num, -nicotine_values) |> 
   
+  #price
+  #where 2 prices, take the 2nd one. I.e. previous price, new sale price 
+  mutate(price = as.numeric(str_remove(ifelse(str_detect(price, "\n"), word(price, 2, sep = "\n"), price), "\\$"))) |>
+  
   #clean-up
-  mutate(across(everything(), str_trim)) |> 
+  mutate(across(where(is.character), str_trim)) |> 
   relocate(details, .after = nicotine_max) |> 
-  filter(name != "about-us")
+  select(-details2) 
+
+d |> select(name, starts_with("price"))
 
 d |> filter(!is.na(size)) #491 products
 d |> filter(!is.na(vgpg)) #313 products. Some extra irrelevant ratios
 d |> filter(!is.na(flavour)) #355 products
 d |> filter(!is.na(nicotine)) #307 products
+d |> filter(!is.na(price)) 
 
-# d |> 
-#   filter(str_detect(category, "E-Liquids")) |> 
-#   View()
+d |> 
+  select(buttons, starts_with("nico"), price) |> 
+  select(starts_with("price")) |> 
+  mutate(price2 = as.numeric(str_remove(ifelse(str_detect(price, "\n"), word(price, 2, sep = "\n"), price), "\\$")))
 
 d |> 
   filter(str_detect(category, "E-Liquids")) |> 
@@ -101,8 +107,6 @@ d |>
   filter(str_detect(category, "E-Liquids")) |> 
   mutate(size_na = is.na(size)) |> 
   filter(size_na) 
-
-latest_run
 
 write_csv(d, fs::path("shosha", "data", latest_run, "cleaned", ext = "csv"))
 
