@@ -51,16 +51,17 @@ d <- shosha |>
   
   #price
   #where 2 prices, take the 2nd one. I.e. previous price, new sale price 
-  mutate(price2 = as.numeric(str_remove(ifelse(str_detect(price, "\n"), word(price, 2, sep = "\n"), price), "\\$"))) |>
-  relocate(price2, .after = price) |> 
+  mutate(price_num = as.numeric(str_remove(ifelse(str_detect(price, "\n"), word(price, 2, sep = "\n"), price), "\\$"))) |>
+  relocate(price_num, .after = price) |> 
   
   #clean-up
   mutate(across(where(is.character), str_trim)) |> 
   select(-details2) |> 
-  mutate(disposable_keyword = str_detect(details, "(?i)(disposable)")) |> 
+  mutate(details_disposable_keyword = str_detect(details, "(?i)(disposable)")) |> 
   select(name, category, buttons, details, price, everything())
 
 d |> view()
 
 write_csv(d, fs::path("shosha", "data", latest_run, "cleaned", ext = "csv"))
+
 
