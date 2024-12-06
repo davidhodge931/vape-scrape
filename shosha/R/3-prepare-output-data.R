@@ -26,7 +26,7 @@ d <- shosha |>
   mutate(size = str_extract(details2, "(Size:.*?)(?=\\n|\\|)")) |> 
   mutate(size = str_remove(size, ", Made in .*")) |>
   mutate(size = str_remove(size, "Size: ")) |> 
-  mutate(size = str_replace_all(size, "mL", "ml")) |> 
+  mutate(size = str_replace_all(size, "ML|mL", "ml")) |> 
   mutate(size = str_replace(size, "/", ", ")) |>   
   
   #vgpg
@@ -50,7 +50,7 @@ d <- shosha |>
   mutate(nicotine_num = nicotine_values |> str_extract_all("\\d+(\\.\\d+)?(?=mg/ml)") %>% map(\(x) as.double(x))) |>
   mutate(nicotine_min = map_dbl(nicotine_num, min)) |>
   mutate(nicotine_max = map_dbl(nicotine_num, max)) |>
-  select(-nicotine_num, -nicotine_values) |> 
+  select(-nicotine_num, -nicotine_values) |>
   
   #price
   #where 2 prices, take the 2nd one. I.e. previous price, new sale price 
@@ -61,6 +61,11 @@ d <- shosha |>
   mutate(across(where(is.character), str_trim)) |> 
   relocate(details, .after = nicotine_max) |> 
   select(-details2) 
+
+# d |> 
+#   select(buttons) |> 
+#   mutate(nicotine_num = buttons |> str_extract_all("\\d+(\\.\\d+)?(?=mg/ml)") %>% map(\(x) as.double(x)))  |> 
+#   view()
 
 d |> filter(!is.na(size)) #491 products
 d |> filter(!is.na(vgpg)) #313 products. Some extra irrelevant ratios

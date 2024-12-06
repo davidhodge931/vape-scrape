@@ -47,7 +47,7 @@ urls <- urls |> pull()
 
 ######################################
 # test
-urls <- c(urls[c(340:345)],
+urls <- c(urls[c(340:400)],
           "https://www.shosha.co.nz/salty-pulse-bar-watermelon-peach-ice-disposable-vape")
 ####################################
 
