@@ -16,13 +16,14 @@ latest_run <- fs::dir_ls(fs::path("shosha", "data")) |>
   slice_max(value) |>
   pull()
 
-f <- fs::path("shosha", "data", latest_run, "scraped", ext = "csv") # file path to save scraped data into
+f <- fs::path("shosha", "data", latest_run, glue::glue("shosha-scraped-{str_sub(latest_run, 1, 10)}"), ext = "csv") # file path to save scraped data into
+f
 
 ################################################################################
-# save the sitemap locally within this folder - and name as shosha-sitemap
+# save the sitemap locally within this folder - and name as shosha-sitemap-yyyy-mm-dd
 ################################################################################
 # read_xml("https://www.shosha.co.nz/sitemap_nz.xml") #blocked
-sitemap <- read_xml(fs::path("shosha", "data", latest_run, "sitemap_nz", ext = "xml"))
+sitemap <- read_xml(fs::path("shosha", "data", latest_run, glue::glue("shosha-sitemap-{str_sub(latest_run, 1, 10)}"), ext = "xml"))
 
 nodes <- sitemap |>
   xml_children() |>
