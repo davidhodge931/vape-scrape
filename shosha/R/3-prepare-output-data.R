@@ -111,6 +111,12 @@ d <- shosha |>
   
   # estimate nicotine and size by prioritising buttons info
   mutate(
+    estimate_nicotine_type = case_when(
+      !is.na(buttons_nicotine_num) ~ "Nicotine Concentration",
+      TRUE ~ details_nicotine_type,
+    )
+  ) |>
+  mutate(
     estimate_nicotine_num = case_when(
       !is.na(buttons_nicotine_num) ~ buttons_nicotine_num,
       !is.na(details_nicotine_num) ~ details_nicotine_num,
@@ -167,9 +173,23 @@ d <- shosha |>
 
 d
 d |> glimpse()
-# d |> view()
 
-write_csv(d, fs::path("shosha", "data", latest_run, "cleaned", ext = "csv"))
+write_csv(d_summary, fs::path("shosha", "data", latest_run, glue::glue("shosha-workings-{str_sub(latest_run, 1, 10)}"), ext = "csv"))
 
 d |> 
   glimpse()
+
+d_summary <- d |> 
+  select(name, 
+         category, 
+         contains("estimate"),
+         contains("vpvg"), 
+         contains("flavour"),
+         contains("disposable"),
+  ) |> 
+  rename_with(\(x) str_remove(x, "details_")) |> 
+  rename_with(\(x) str_remove(x, "estimate_")) 
+
+write_csv(d_summary, fs::path("shosha", "data", latest_run, glue::glue("shosha-{str_sub(latest_run, 1, 10)}"), ext = "csv"))
+
+
