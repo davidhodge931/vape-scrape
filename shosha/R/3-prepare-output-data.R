@@ -192,4 +192,4 @@ d_summary <- d |>
 
 write_csv(d_summary, fs::path("shosha", "data", latest_run, glue::glue("shosha-{str_sub(latest_run, 1, 10)}"), ext = "csv"))
 
-
+View(d_summary)
