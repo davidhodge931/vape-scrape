@@ -191,6 +191,8 @@ write_csv(shosha_cleaned,
           file = fs::path("shosha", "data", latest_run, glue::glue("shosha-cleaned-{str_sub(latest_run, 1, 10)}"), ext = "csv"),
           na = "")
 
+openxlsx::write.xlsx(shosha_cleaned, 
+                     file = fs::path("shosha", "data", latest_run, glue::glue("shosha-cleaned-{str_sub(latest_run, 1, 10)}"), ext = "xlsx"))
+
+
 shosha_cleaned |> glimpse()
-
-
