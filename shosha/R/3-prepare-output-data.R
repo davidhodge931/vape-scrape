@@ -1,6 +1,6 @@
 library(tidyverse)
 
-moh_flavours_approved <- c("Tobacco", "Pepper", "Grape", "Strawberry", 
+moh_flavours_approved   <- c("Tobacco", "Pepper", "Grape", "Strawberry", 
                            "Menthol",	"Spice",	"Guava",	"Tropical",
                            "Mint",	"Cappuccino",	"Kiwifruit",	"Watermelon",
                            "Peppermint",	"Coffee",	"Lemon",	"Caramel",
@@ -22,13 +22,19 @@ latest_run <- fs::dir_ls(fs::path("shosha", "data")) |>
   slice_max(value) |>
   pull()
 
-shosha_scraped <- read_csv(fs::path("shosha", "data", latest_run, glue::glue("shosha-scraped-{str_sub(latest_run, 1, 10)}"), ext = "csv"))  
-
+shosha_scraped <- read_csv(fs::path("shosha", "data", latest_run, glue::glue("shosha-scraped-{str_sub(latest_run, 1, 10)}"), ext = "csv"))  |> 
+  rename_with(\(x) glue::glue("{x}_text"))  
+  
 shosha_cleaned <- shosha_scraped |> 
-  rename_with(\(x) glue::glue("{x}_text")) |> 
   mutate(details_text2 = details_text) |> 
   mutate(details_text2 = str_remove(details_text2, "(?i)(GET FREE SHIPPING).*")) |> 
-  mutate(details_text2 = str_replace_all(details_text2, regex("mg/ml", ignore_case = TRUE), "mg/ml")) |> 
+  mutate(details_text2 = str_replace_all(details_text2, regex("mg/ml", ignore_case = TRUE), "mg/ml")) |>
+  
+  #price
+  mutate(price_num = as.numeric(str_remove(ifelse(str_detect(price_text, "\n"), word(price_text, 2, sep = "\n"), price_text), "\\$"))) |>
+  
+  #disposable
+  mutate(disposable_keyword = str_detect(details_text, "(?i)(disposable)")) |> 
   
   #flavour
   mutate(flavours_text = str_extract(details_text2, "(?i)(Flavor Profile:|Flavour Profile:|Flavor:|Flavour:|Flavors Profile:|flavours_text Profile:|Flavors:|flavours_text:)(.*?)(?=\n|\\|)")) |> 
@@ -53,87 +59,24 @@ shosha_cleaned <- shosha_scraped |>
   mutate(size_values_details = str_remove(size_values_details, ", Made in .*")) |>
   mutate(size_values_details = str_remove(size_values_details, "Size: ")) |> 
   mutate(size_values_details = str_replace(size_values_details, "/", ", ")) |>   
-  
   mutate(size_num_details = size_values_details |> str_extract_all("\\d+(\\.\\d+)?(?=ml)") %>% map(\(x) as.double(x))) |>
   mutate(size_min_details = map_dbl(size_num_details, min)) |>
-  mutate(size_max_details = map_dbl(size_num_details, max)) |> 
+  mutate(size_max_details = map_dbl(size_num_details, max)) |>
   
-  #nicotine
-  mutate(nicotine_details = str_extract(details_text2, "(?i)(Nicotine\\s+(concentration|strength|salt\\sstrength):[^\\n]*)")) |> 
-  mutate(nicotine_details = str_remove(nicotine_details, "(?i)(Caution:.*)")) |> 
-  mutate(nicotine_details = str_remove(nicotine_details, "(?i)(Specifications:.*)")) |>
-  mutate(nicotine_details = str_remove(nicotine_details, "(?i)(Pod Capacity:.*)")) |> 
-  mutate(nicotine_details = str_extract(nicotine_details, "^[^|]+")) |> 
-  mutate(nicotine_details = str_remove(nicotine_details, "\\(.*")) |>
-  mutate(nicotine_type_details = word(nicotine_details, 1, sep = ": ")) |> 
-  mutate(nicotine_values_details = word(nicotine_details, -1, sep = ": ")) |> 
-  mutate(nicotine_num_details = nicotine_values_details |> str_extract_all("\\d+(\\.\\d+)?(?=mg/ml)") %>% map(\(x) as.double(x))) |>
-  mutate(nicotine_min_details = map_dbl(nicotine_num_details, min)) |>
-  mutate(nicotine_max_details = map_dbl(nicotine_num_details, max)) |>
-  mutate(nicotine_values_details = str_replace_all(nicotine_values_details, "\\s*[-–—]+\\s*", ", ")) |> 
-  
-  #price_text
-  #where 2 price_texts, take the 2nd one. I.e. previous price_text, new sale price_text 
-  mutate(price_num = as.numeric(str_remove(ifelse(str_detect(price_text, "\n"), word(price_text, 2, sep = "\n"), price_text), "\\$"))) |>
-  relocate(price_num, .after = price_text) |> 
-  
-  #buttons_text
-  mutate(
-    nicotine_values_buttons = buttons_text |> 
-      str_split(", ") %>%
-      purrr::map(\(x) str_subset(x, regex("\\dmg/ml$", ignore_case = TRUE))) %>%
-      purrr::map_chr(\(x) paste(x, collapse = ", "))
-  ) |> 
   mutate(
     size_buttons = buttons_text |> 
       str_split(", ") %>%
       purrr::map(\(x) str_subset(x, regex("\\dml$", ignore_case = TRUE))) %>%
       purrr::map_chr(\(x) paste(x, collapse = ", "))
   ) |> 
-  mutate(
-    nicotine_values_buttons = ifelse(nicotine_values_buttons == "" | category_text != "E-Liquids", NA, nicotine_values_buttons),
-    size_values_buttons = ifelse(size_buttons == "" | category_text != "E-Liquids", NA, size_buttons),
-  ) |> 
-  mutate(nicotine_num_buttons = nicotine_values_buttons |> str_extract_all("\\d+(\\.\\d+)?(?=mg/ml)") %>% map(\(x) as.double(x))) |>
-  mutate(nicotine_min_buttons = map_dbl(nicotine_num_buttons, min)) |>
-  mutate(nicotine_max_buttons = map_dbl(nicotine_num_buttons, max)) |>
+  
+  mutate(size_values_buttons = ifelse(size_buttons == "", NA, size_buttons)) |>
+  # mutate(size_values_buttons = ifelse(size_buttons == "" | category_text != "E-Liquids", NA, size_buttons)) |>
+  
   mutate(size_num_buttons = size_values_buttons |> str_extract_all("\\d+(\\.\\d+)?(?=ml)") %>% map(\(x) as.double(x))) |>
   mutate(size_min_buttons = map_dbl(size_num_buttons, min)) |>
   mutate(size_max_buttons = map_dbl(size_num_buttons, max)) |> 
   
-  #clean-up
-  mutate(across(where(is.character), str_trim)) |> 
-  select(-details_text2) |> 
-  mutate(disposable_keyword = str_detect(details_text, "(?i)(disposable)")) |> 
-  
-  # estimate nicotine and size by prioritising buttons_text info
-  mutate(
-    nicotine_type = case_when(
-      !is.na(nicotine_num_buttons) ~ "Nicotine Concentration",
-      TRUE ~ nicotine_type_details,
-    )
-  ) |>
-  mutate(
-    nicotine_num = case_when(
-      !is.na(nicotine_num_buttons) ~ nicotine_num_buttons,
-      !is.na(nicotine_num_details) ~ nicotine_num_details,
-      TRUE ~ NA,
-    )
-  ) |>
-  mutate(
-    nicotine_min = case_when(
-      !is.na(nicotine_min_buttons) ~ nicotine_min_buttons,
-      !is.na(nicotine_min_details) ~ nicotine_min_details,
-      TRUE ~ NA,
-    )
-  ) |> 
-  mutate(
-    nicotine_max = case_when(
-      !is.na(nicotine_max_buttons) ~ nicotine_max_buttons,
-      !is.na(nicotine_max_details) ~ nicotine_max_details,
-      TRUE ~ NA,
-    )
-  ) |> 
   mutate(
     nicotine_size_num = case_when(
       !is.na(size_num_buttons) ~ size_num_buttons,
@@ -155,23 +98,78 @@ shosha_cleaned <- shosha_scraped |>
       TRUE ~ NA,
     )
   ) |> 
+  mutate(across(c(size_min, size_max), \(x) ifelse(is.infinite(x), NA, x)))  |> 
+
+  #nicotine
+  mutate(nicotine_details = str_extract(details_text2, "(?i)(nicotine\\s+(concentration|strength)?\\s*[:]?\\s*(\\d+\\.?\\d*)\\s*mg/ml)")) |> 
+  mutate(nicotine_details = str_remove(nicotine_details, "(?i)(Caution:.*)")) |> 
+  mutate(nicotine_details = str_remove(nicotine_details, "(?i)(Specifications:.*)")) |>
+  mutate(nicotine_details = str_remove(nicotine_details, "(?i)(Pod Capacity:.*)")) |> 
+  mutate(nicotine_details = str_extract(nicotine_details, "^[^|]+")) |> 
+  mutate(nicotine_details = str_remove(nicotine_details, "\\(.*")) |>
+  mutate(nicotine_values_details = word(nicotine_details, -1, sep = ": ")) |>
+  mutate(nicotine_num_details = nicotine_values_details |> str_extract_all("\\d+(\\.\\d+)?(?=mg/ml)") %>% map(\(x) as.double(x))) |>
+  mutate(nicotine_min_details = map_dbl(nicotine_num_details, min)) |>
+  mutate(nicotine_max_details = map_dbl(nicotine_num_details, max)) |>
+  mutate(nicotine_values_details = str_replace_all(nicotine_values_details, "\\s*[-–—]+\\s*", ", ")) |>
   
   mutate(
-    flavours_approved = 
+    nicotine_values_buttons = buttons_text |> 
+      str_split(", ") %>%
+      purrr::map(\(x) str_subset(x, regex("\\dmg/ml$", ignore_case = TRUE))) %>%
+      purrr::map_chr(\(x) paste(x, collapse = ", "))
+  ) |> 
+  mutate(nicotine_values_buttons = ifelse(nicotine_values_buttons == "" | category_text != "E-Liquids", NA, nicotine_values_buttons)) |>
+  mutate(nicotine_num_buttons = nicotine_values_buttons |> str_extract_all("\\d+(\\.\\d+)?(?=mg/ml)") %>% map(\(x) as.double(x))) |>
+  mutate(nicotine_min_buttons = map_dbl(nicotine_num_buttons, min)) |>
+  mutate(nicotine_max_buttons = map_dbl(nicotine_num_buttons, max)) |>
+  
+  mutate(
+    nicotine_num = case_when(
+      !is.na(nicotine_num_buttons) ~ nicotine_num_buttons,
+      !is.na(nicotine_num_details) ~ nicotine_num_details,
+      TRUE ~ NA,
+    )
+  ) |>
+  mutate(
+    nicotine_min = case_when(
+      !is.na(nicotine_min_buttons) ~ nicotine_min_buttons,
+      !is.na(nicotine_min_details) ~ nicotine_min_details,
+      TRUE ~ NA,
+    )
+  ) |> 
+  mutate(
+    nicotine_max = case_when(
+      !is.na(nicotine_max_buttons) ~ nicotine_max_buttons,
+      !is.na(nicotine_max_details) ~ nicotine_max_details,
+      TRUE ~ NA,
+    )
+  ) |>
+  mutate(across(c(nicotine_min, nicotine_max), \(x) ifelse(is.infinite(x), NA, x)))  |> 
+
+  #approved
+  mutate(
+    flavours_each_approved   = 
       ifelse(is.na(flavours_text), NA, flavours_text |> 
                str_split(",\\s*") |> 
-               map_lgl(~ all(.x %in% moh_flavours_approved)) 
+               map_lgl(~ all(.x %in% moh_flavours_approved  )) 
       )
   ) |> 
   mutate(flavours_count = str_count(flavours_text, ",") + 1) |>
   
-  #convert infinites to NA
-  mutate(across(c(size_min, size_max, nicotine_min, nicotine_max), \(x) ifelse(is.infinite(x), NA, x)))  |> 
-  
-  #get rid of unneeded vars and make nice order
-  select(-ends_with("details"), -ends_with("buttons")) |> 
   mutate(
-    ais = "shosha",
+    nicotine_approved = case_when(
+      disposable_keyword & nicotine_max > 20 ~ FALSE,!disposable_keyword &
+        nicotine_max > 28.5 ~ FALSE,
+      TRUE ~ TRUE,
+    )
+  ) |> 
+  
+  #clean-up
+  mutate(across(where(is.character), str_trim)) |> 
+  select(-details_text2, -ends_with("details"), -ends_with("buttons")) |> 
+  mutate(
+    ais = "https://www.shosha.co.nz",
     url = glue::glue("https://www.shosha.co.nz/{name_text}")) |> 
   select(
     ais,
@@ -187,6 +185,8 @@ shosha_cleaned <- shosha_scraped |>
     everything(),
   )  
 
+shosha_cleaned |> glimpse()
+
 write_csv(shosha_cleaned, 
           file = fs::path("shosha", "data", latest_run, glue::glue("shosha-cleaned-{str_sub(latest_run, 1, 10)}"), ext = "csv"),
           na = "")
@@ -194,5 +194,6 @@ write_csv(shosha_cleaned,
 openxlsx::write.xlsx(shosha_cleaned, 
                      file = fs::path("shosha", "data", latest_run, glue::glue("shosha-cleaned-{str_sub(latest_run, 1, 10)}"), ext = "xlsx"))
 
-
 shosha_cleaned |> glimpse()
+
+shosha_cleaned |> view()
