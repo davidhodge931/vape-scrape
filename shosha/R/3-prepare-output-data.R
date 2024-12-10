@@ -170,8 +170,11 @@ shosha_cleaned <- shosha_scraped |>
   
   #get rid of unneeded vars and make nice order
   select(-ends_with("details"), -ends_with("buttons")) |> 
-  mutate(url = glue::glue("https://www.shosha.co.nz/{name_text}")) |> 
+  mutate(
+    ais = "shosha",
+    url = glue::glue("https://www.shosha.co.nz/{name_text}")) |> 
   select(
+    ais,
     name_text,
     category_text,
     starts_with("price"),
@@ -188,6 +191,6 @@ write_csv(shosha_cleaned,
           file = fs::path("shosha", "data", latest_run, glue::glue("shosha-cleaned-{str_sub(latest_run, 1, 10)}"), ext = "csv"),
           na = "")
 
-d |> glimpse()
+shosha_cleaned |> glimpse()
 
 
