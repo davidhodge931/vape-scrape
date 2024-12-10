@@ -185,6 +185,7 @@ d |> glimpse()
 d_summary <- d |> 
   select(name, 
          category, 
+         price_num,
          contains("estimate"),
          contains("vpvg"), 
          contains("flavour"),
@@ -200,3 +201,14 @@ write_csv(d_summary,
           fs::path("shosha", "data", latest_run, glue::glue("shosha-{str_sub(latest_run, 1, 10)}"), ext = "csv"),
           na = "")
 
+shosha |> 
+  filter(name == "ijoy-shogun-univ-kit") |> 
+  mutate(price_num = as.numeric(str_remove(ifelse(str_detect(price, "\n"), word(price, 2, sep = "\n"), price), "\\$"))) |>
+  relocate(price_num, .after = price)  
+
+d_summary |> 
+  filter(name == "ijoy-shogun-univ-kit") 
+
+d |> 
+  filter(!is.na(price)) |> 
+  select(name)
