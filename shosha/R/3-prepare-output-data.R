@@ -31,7 +31,7 @@ shosha_cleaned <- shosha_scraped |>
   mutate(details_text2 = str_replace_all(details_text2, regex("mg/ml", ignore_case = TRUE), "mg/ml")) |>
   
   #price
-  mutate(price_num = as.numeric(str_remove(ifelse(str_detect(price_text, "\n"), word(price_text, 2, sep = "\n"), price_text), "\\$"))) |>
+  mutate(price_num = as.numeric(str_remove_all(ifelse(str_detect(price_text, "\n"), word(price_text, 2, sep = "\n"), price_text), "[\\$,]")))  |>
   
   #disposable
   mutate(disposable_keyword = str_detect(details_text, "(?i)(disposable)")) |> 
@@ -148,6 +148,9 @@ shosha_cleaned <- shosha_scraped |>
   mutate(across(c(nicotine_min, nicotine_max), \(x) ifelse(is.infinite(x), NA, x)))  |> 
 
   #approved
+  mutate(across(where(is.character), str_trim)) |> 
+  
+  #approved
   mutate(
     flavours_each_approved   = 
       ifelse(is.na(flavours_text), NA, flavours_text |> 
@@ -155,7 +158,7 @@ shosha_cleaned <- shosha_scraped |>
                map_lgl(~ all(.x %in% moh_flavours_approved  )) 
       )
   ) |> 
-  mutate(flavours_count = str_count(flavours_text, ",") + 1) |>
+  mutate(flavours_count_approx = str_count(flavours_text, ",") + 1) |>
   
   mutate(
     nicotine_approved = case_when(
@@ -166,7 +169,6 @@ shosha_cleaned <- shosha_scraped |>
   ) |> 
   
   #clean-up
-  mutate(across(where(is.character), str_trim)) |> 
   select(-details_text2, -ends_with("details"), -ends_with("buttons")) |> 
   mutate(
     ais = "https://www.shosha.co.nz",
