@@ -169,15 +169,18 @@ d <- shosha |>
   mutate(details_flavours_count = str_count(details_flavour, ",") + 1) |>
 
   #make sure nice order
-  select(name, category, contains("price"), contains("details"), contains("buttons"), contains("estimate"), everything()) 
+  select(name, category, contains("price"), contains("details"), contains("buttons"), contains("estimate"), everything()) |> 
+  mutate(across(c(estimate_size_min, estimate_size_max, estimate_nicotine_min, estimate_nicotine_max), \(x) ifelse(is.infinite(x), NA, x)))  
+  
 
 d
 d |> glimpse()
 
-write_csv(d_summary, fs::path("shosha", "data", latest_run, glue::glue("shosha-workings-{str_sub(latest_run, 1, 10)}"), ext = "csv"))
+write_csv(d, 
+          fs::path("shosha", "data", latest_run, glue::glue("shosha-workings-{str_sub(latest_run, 1, 10)}"), ext = "csv"),
+          na = "")
 
-d |> 
-  glimpse()
+d |> glimpse()
 
 d_summary <- d |> 
   select(name, 
@@ -188,8 +191,12 @@ d_summary <- d |>
          contains("disposable"),
   ) |> 
   rename_with(\(x) str_remove(x, "details_")) |> 
-  rename_with(\(x) str_remove(x, "estimate_")) 
+  rename_with(\(x) str_remove(x, "estimate_")) |> 
+  select(-nicotine_num, -size_num) 
 
-write_csv(d_summary, fs::path("shosha", "data", latest_run, glue::glue("shosha-{str_sub(latest_run, 1, 10)}"), ext = "csv"))
+d_summary |> glimpse()
 
-View(d_summary)
+write_csv(d_summary, 
+          fs::path("shosha", "data", latest_run, glue::glue("shosha-{str_sub(latest_run, 1, 10)}"), ext = "csv"),
+          na = "")
+
