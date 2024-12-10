@@ -55,11 +55,31 @@ shosha_cleaned <- shosha_scraped |>
   mutate(details_text2 = str_remove(details_text2, "(?i)(VG/PG:|PG/VG:|VG/PG ratio:|PG/VG ratio:.*?)(?=\\n|\\|)")) |>
   
   #size
-  mutate(size_values_details = str_extract(details_text2, "(Size:.*?)(?=\\n|\\|)")) |> 
+  mutate(
+    # Extract the size information (everything after "Size:" and up to the next newline or the end of the string)
+    size_values_details = str_trim(str_extract(details_text2, "(?i)Size:.*?(?=\\n|$)")),
+    # Extract all numeric values for the sizes (ignoring 'mL' or 'ml')
+    size_num_details = str_extract_all(size_values_details, "\\d+(\\.\\d+)?(?=\\s?[mM][lL])") |> 
+      map(~ as.double(.)),
+    # Calculate min and max for each vector of sizes
+    size_min_details = map_dbl(size_num_details, ~ min(.x, na.rm = TRUE)),
+    size_max_details = map_dbl(size_num_details, ~ max(.x, na.rm = TRUE))
+  ) |> 
+
+  mutate(size_values_details = str_extract(details_text2, "(?i)(Size:.*?)(?=\\n|\\|)")) |> 
   mutate(size_values_details = str_remove(size_values_details, ", Made in .*")) |>
   mutate(size_values_details = str_remove(size_values_details, "Size: ")) |> 
   mutate(size_values_details = str_replace(size_values_details, "/", ", ")) |>   
-  mutate(size_num_details = size_values_details |> str_extract_all("\\d+(\\.\\d+)?(?=ml)") %>% map(\(x) as.double(x))) |>
+  
+  
+  # mutate(size_num_details = size_values_details |> str_extract_all("\\d+(\\.\\d+)?(?=ml)") %>% map(\(x) as.double(x))) |>
+  # mutate(size_num_details = size_values_details |> str_extract_all("\\d+(\\.\\d+)?(?=ml)") %>% map(\(x) as.double(x))) |>
+  
+  # shosha_cleaned |> select(size_values_details) |> 
+  mutate(size_num_details = size_values_details |> str_extract_all("\\d+(\\.\\d+)?(?=ml)") %>% str_replace_all("(?i)[,ml]", "") |> map(\(x) as.double(x))) |>
+  
+  # mutate(size_num_details = as.numeric(str_replace_all(size_values_details, "[,mL]", ""))) |> filter(!is.na(size_values_details)) 
+  
   mutate(size_min_details = map_dbl(size_num_details, min)) |>
   mutate(size_max_details = map_dbl(size_num_details, max)) |>
   
@@ -198,4 +218,6 @@ openxlsx::write.xlsx(shosha_cleaned,
 
 shosha_cleaned |> glimpse()
 
-shosha_cleaned |> view()
+shosha_cleaned |> 
+  filter(category_text != "E-Liquids") |> 
+  view()
