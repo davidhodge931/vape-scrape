@@ -24,23 +24,25 @@ shosha_cleaned |>
 
 url_check <- "https://www.shosha.co.nz/ice-edition-raspberry-lime-salty-pulse-replacement-pod"
 url_check <-"https://www.shosha.co.nz/salty-get-bar-mint-grape-disposable-vape"
+url_check <-"https://www.shosha.co.nz/ice-edition-raspberry-lime-salty-pulse-replacement-pod"
+url_check <-"https://www.shosha.co.nz/ultra-bar-green-grape-disposabe-vape"
 
 shosha_cleaned |> 
   filter(url == url_check)  |> 
   glimpse()
 
 shosha_cleaned |> 
-  filter(str_detect(name_text, "disposable"))  |> 
   count(disposable_keyword)
 
+#only 74 of 
 
 shosha_cleaned |> 
   select(name_text, category_text, details_text, buttons_text) |> 
   mutate(disposable_keyword = str_detect(details_text, "(?i)(disposable)") | str_detect(name_text, "(?i)(disposable)")) |> 
+  mutate(replacement_pod_keyword = str_detect(details_text, fixed("replacement pod", ignore_case = TRUE)) | str_detect(name_text, fixed("replacement pod", ignore_case = TRUE))) |> 
   # mutate(disposable_keyword = str_detect(details_text, "(?i)(disposable)") | str_detect(name_text, "(?i)(disposable)")) |> 
-  
   # mutate(disposable_name = str_detect(name_text, "(?i)(disposable)")) |> 
-  filter(disposable_keyword)
+  filter(disposable_keyword | replacement_pod_keyword)
 
 
 
