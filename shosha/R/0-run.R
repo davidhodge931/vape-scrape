@@ -15,8 +15,6 @@ scripts <- fs::dir_ls(fs::path("shosha", "R")) |>
   str_subset("z-archive", negate = TRUE) |>
   str_subset("0-run", negate = TRUE) 
 
-test <- FALSE
-
 purrr::walk(scripts, \(x) source(x))
 
 time_end <- Sys.time()
