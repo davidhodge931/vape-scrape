@@ -15,18 +15,32 @@ tibble(
   ) |> 
   glimpse()
 
+shosha_cleaned |> 
+  distinct(category_text )
+
+shosha_cleaned |> 
+  filter(category_text == "Vape Devices") |> 
+  filter(disposable_keyword)
+
+url_check <- "https://www.shosha.co.nz/ice-edition-raspberry-lime-salty-pulse-replacement-pod"
+url_check <-"https://www.shosha.co.nz/salty-get-bar-mint-grape-disposable-vape"
+
+shosha_cleaned |> 
+  filter(url == url_check)  |> 
+  glimpse()
+
+shosha_cleaned |> 
+  filter(str_detect(name_text, "disposable"))  |> 
+  count(disposable_keyword)
 
 
-
-
-
-
-
-
-
-
-
-tibble(
-  details_text2 = "blah : 50ml, 60 mL \n Blah"
-) |> 
+shosha_cleaned |> 
+  select(name_text, category_text, details_text, buttons_text) |> 
+  mutate(disposable_keyword = str_detect(details_text, "(?i)(disposable)") | str_detect(name_text, "(?i)(disposable)")) |> 
+  # mutate(disposable_keyword = str_detect(details_text, "(?i)(disposable)") | str_detect(name_text, "(?i)(disposable)")) |> 
   
+  # mutate(disposable_name = str_detect(name_text, "(?i)(disposable)")) |> 
+  filter(disposable_keyword)
+
+
+

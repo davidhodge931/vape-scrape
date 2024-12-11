@@ -34,7 +34,7 @@ shosha_cleaned <- shosha_scraped |>
   mutate(price_num = as.numeric(str_remove_all(ifelse(str_detect(price_text, "\n"), word(price_text, 2, sep = "\n"), price_text), "[\\$,]")))  |>
   
   #disposable
-  mutate(disposable_keyword = str_detect(details_text, "(?i)(disposable)")) |> 
+  mutate(disposable_keyword = str_detect(details_text, "(?i)(disposable)") | str_detect(name_text, "(?i)(disposable)")) |> 
   
   #flavour
   mutate(flavours_text = str_extract(details_text2, "(?i)(Flavor Profile:|Flavour Profile:|Flavor:|Flavour:|Flavors Profile:|flavours_text Profile:|Flavors:|flavours_text:)(.*?)(?=\n|\\|)")) |> 
@@ -219,5 +219,9 @@ openxlsx::write.xlsx(shosha_cleaned,
 shosha_cleaned |> glimpse()
 
 shosha_cleaned |> 
-  filter(category_text != "E-Liquids") |> 
+  filter(category_text == "E-Liquids") |> 
   view()
+
+shosha_cleaned |> 
+  group_by(category_text) |> 
+  count()
