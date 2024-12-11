@@ -46,10 +46,11 @@ urls <- urls |>
 
 urls <- urls |> pull()
 
-if (test) {
-  urls <- c(urls[c(340:400)],
-            "https://www.shosha.co.nz/salty-pulse-bar-watermelon-peach-ice-disposable-vape")
-}
+################################################################################
+# use for testing
+# urls <- c(urls[c(340:360)],
+#           "https://www.shosha.co.nz/salty-pulse-bar-watermelon-peach-ice-disposable-vape")
+################################################################################
 
 #show the polite scraping settings for this page - suggests 5 second delay in this case
 print(bow("https://www.shosha.co.nz/"))
