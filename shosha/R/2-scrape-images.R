@@ -35,23 +35,14 @@ urls <- urls |>
 
 urls <- urls |> pull() 
 
-urls <- c(urls[c(340:360)],
-  "https://www.shosha.co.nz/salty-pulse-bar-watermelon-peach-ice-disposable-vape")
+################################################################################
+if (test) {
+  urls <- c(urls[c(340:360)],
+            "https://www.shosha.co.nz/salty-pulse-bar-watermelon-peach-ice-disposable-vape")
+}
 
-folder_path <- fs::path("shosha", "images", latest_run)
-
-# file paths
-
-# f <- fs::path(folder_path, "shosha", ext = "csv")
-# urls_path <- fs::path("data", "shosha_urls", ext = "csv")
-# urls <- readr::read_csv(file = urls_path) 
-
-#get urls to loop through 
-# urls <- urls |> 
-#   pull() |> 
-#   # magrittr::extract(1:nrow(urls)) #loop all
-#   # magrittr::extract(450:nrow(urls)) #test on x urls, products begin at 450, but should add some logic to subset only product url's
-#   magrittr::extract(450:455)
+folder_path <- fs::path("shosha", "data", latest_run, "images")
+fs::dir_create(folder_path)
 
 #show the polite scraping settings for this page - suggests 5 second delay in this case
 print(bow("https://www.shosha.co.nz/"))
