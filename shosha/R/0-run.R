@@ -1,5 +1,5 @@
 # Scraping process
-
+library(tidyverse)
 time_start <- Sys.time()
 
 # 1. Generate a unique folder name and file path
