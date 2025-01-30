@@ -164,7 +164,7 @@ imap(urls, function(x, i) {
 
 image_time_end <- Sys.time()
 image_time_duration <- image_time_end - image_time_start
-image_tume_duration
+image_time_duration
 
 
 
