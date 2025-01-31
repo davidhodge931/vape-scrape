@@ -37,17 +37,10 @@ vapo_cleaned <- vapo_scraped |>
   mutate(disposable_keyword = str_detect(details_text, "(?i)(disposable)") | str_detect(name_text, "(?i)(disposable)")) |> 
   
   #flavour
-  mutate(flavours_text = str_extract(details_text2, "(?i)(Flavor Profile:|Flavour Profile:|Flavor:|Flavour:|Flavors Profile:|flavours_text Profile:|Flavors:|flavours_text:)(.*?)(?=\n|\\|)")) |> 
-  mutate(flavours_text = str_remove(flavours_text, "(?i)(Flavor Profile:|Flavour Profile:|Flavor:|Flavour:|Flavors Profile:|flavours_text Profile:|Flavors:|flavours_text:)")) |>
-  mutate(flavours_text = str_remove(flavours_text, "\\.")) |> 
-  mutate(flavours_text = str_replace_all(flavours_text, ", &", ",")) |>
-  mutate(flavours_text = str_replace_all(flavours_text, " &", ",")) |>
-  mutate(flavours_text = str_replace_all(flavours_text, ", and ", ", ")) |>
-  mutate(flavours_text = str_replace_all(flavours_text, " and ", ", ")) |>
-  mutate(flavours_text = str_replace_all(flavours_text, ",,", ",")) |>
-  mutate(flavours_text = str_replace_all(flavours_text, ";", ",")) |>
-  mutate(details_text2 = str_remove(details_text2, "(?i)(Flavor Profile:|Flavour Profile:|Flavor:|Flavour:|Flavors Profile:|flavours_text Profile:|Flavors:|flavours_text:)(.*?)(?=\n|\\|)")) |>
-  
+  mutate(name_length = str_count(name, "\\|") + 1) |> 
+  mutate(flavour_text = ifelse(name_length == 2, str_split(name, pattern = " \\| ")[[1]][1], NA)) |> 
+  select(-name_length) |> 
+
   #vgpg_text
   mutate(vgpg_text = purrr::map(str_extract_all(details_text, "\\b\\d+/\\d+\\b"), unique)) |> 
   mutate(vgpg_text = ifelse(vgpg_text == "character(0)", NA_character_,  vgpg_text)) |> 
