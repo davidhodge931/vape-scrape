@@ -3,7 +3,8 @@ library(chromote)
 library(rvest)
 
 url <- "https://www.vapo.co.nz/products/vapo-eliquid-tobacco"
-browseURL(url)
+# browseURL(url)
+
 url_html_live <- url |> 
   read_html_live()
 
@@ -20,10 +21,8 @@ name
 
 #brand 
 brand <- url_html_live |> 
-  html_elements("a.product-vendor--link")  |> 
-  html_text2() |> 
-  str_sub(4) |> #remove ' by'  
-  str_trim()
+  html_elements(".product--text.style_vendor a.product-vendor--link")  |> 
+  html_text2() 
 
 if (vctrs::vec_is_empty(brand)) brand <- NA
 
