@@ -18,7 +18,7 @@ if (vctrs::vec_is_empty(name)) name <- NA
 
 name
 
-#brand
+#brand 
 brand <- url_html_live |> 
   html_elements("p.product--text")  |> 
   html_text2() |> 
@@ -29,11 +29,11 @@ if (vctrs::vec_is_empty(brand)) brand <- NA
 
 brand 
 
-#category
+#category 
 category <- url_html_live |>
-  html_elements("a.breadcrumbs-link-mHX.breadcrumbs-text-lAa") |> 
-  html_text2() |> 
-  magrittr::extract(2) 
+  html_elements("nav.breadcrumbs.override--section") |> 
+  html_text2() #|> 
+  # magrittr::extract(2) 
 
 if (vctrs::vec_is_empty(category)) category <- NA
 
@@ -41,7 +41,7 @@ category
 
 #price
 price <- url_html_live |>
-  html_elements("div.productFullDetail-price-p6T") |> 
+  html_elements("span.amount") |> 
   html_text2() 
 
 if (vctrs::vec_is_empty(price)) price <- NA
@@ -60,7 +60,7 @@ buttons
 
 #details
 details <- url_html_live |> 
-  html_elements(".richContent-root-CMO p") |> 
+  html_elements("div.metafield-rich_text_field") |> 
   html_text2()
 
 #bind together
