@@ -7,8 +7,6 @@ library(rvest)
 # url <- "https://www.shosha.co.nz/brands/freebase-e-liquids-brands/tote-aoturoa-green" #doesn't NOT A PRODUCT
 # url <- "https://www.shosha.co.nz/smok-mag-solo-kit" #works
 # url <- "https://www.shosha.co.nz/tote-aoturoa-green-grape-nicotine-salt-e-liquid-30ml"
-# url <- urls[991]
-
 url <- "https://www.shosha.co.nz/tote-aoturoa-green-grape-freebase-e-liquid-30ml"
 url <-"https://shoshavape.co.nz/products/salty-smart-bar-watermelon-strawberry-disposable-vape?variant=48943386034455"
 

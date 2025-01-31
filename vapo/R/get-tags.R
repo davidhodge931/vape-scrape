@@ -68,7 +68,8 @@ buttons <- list(buttons1, buttons2)
 #details
 details <- url_html_live |> 
   html_elements("div.metafield-rich_text_field") |> 
-  html_text2()
+  html_text2() |> 
+  str_flatten(collapse = "\n")
 
 #bind together
 tibble(
@@ -76,7 +77,7 @@ tibble(
   brand = brand,
   category = category,
   price = price,
-  buttons = buttons,
+  # buttons = buttons,
   details = details,
 ) 
 
