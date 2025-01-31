@@ -48,8 +48,7 @@ if (vctrs::vec_is_empty(price)) price <- NA
 #buttons
 buttons1 <- url_html_live |>
   html_elements("select#Option-template--16181853814923__main-product-0") |> 
-  html_text2() |>
-  stringr::str_flatten_comma()
+  html_text2() 
 
 if (vctrs::vec_is_empty(buttons1)) buttons1 <- NA
 
@@ -57,8 +56,7 @@ buttons1
 
 buttons2 <- url_html_live |>
   html_elements("select#Option-template--16181853814923__main-product-1") |> 
-  html_text2() |>
-  stringr::str_flatten_comma()
+  html_text2() 
 
 if (vctrs::vec_is_empty(buttons2)) buttons2 <- NA
 

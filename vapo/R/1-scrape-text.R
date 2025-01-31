@@ -35,21 +35,12 @@ urls <- xml_text(nodes) |>
   as_tibble() |> 
   rename(url = value) 
 
-#as products are listed as direct children of https://www.vapo.co.nz/
-#filter so that only urls with 3 slashs are included, as others do not relate to products 
-
-# urls <- urls |>
-#   mutate(slash_count = str_count(url, pattern = "/")) |>
-#   mutate(slash_count_3 = slash_count == 3) |>
-#   filter(slash_count_3) |>
-#   select(-slash_count, -slash_count_3)
-
 urls <- urls |> pull()
 
 ################################################################################
 # use for testing
-urls <- c(urls[c(340:360)],
-          "https://www.vapo.co.nz/salty-pulse-bar-watermelon-peach-ice-disposable-vape")
+urls <- c("https://www.vapo.co.nz/products/vapo-eliquid-tobacco",
+          "https://www.vapo.co.nz/products/hola-cola-cherry")
 ################################################################################
 
 #show the polite scraping settings for this page - suggests 5 second delay in this case
@@ -90,36 +81,32 @@ get_html_with_retry <- function(url, retries = 3, delay = 5 * 2) {
       
       Sys.sleep(delay)  # Polite delay as per: print(bow("https://www.vapo.co.nz/"))
       
-      #get product name
-      name <- url %>% sub(".*/", "",.)
+      #get product category
+      name <- wait_for_elements(url_html_live, "h1.product-title") |> 
+        html_text2() 
       
       #get product category
-      category <- wait_for_elements(url_html_live, "a.breadcrumbs-link-mHX.breadcrumbs-text-lAa") |> 
-        html_text2() |> 
-        magrittr::extract(2)
+      category <- wait_for_elements(url_html_live, ".product--text.style_vendor a.product-vendor--link") |> 
+        html_text2() 
       
       #get price
-      price <- wait_for_elements(url_html_live, "div.productFullDetail-price-p6T") |> 
+      price <- wait_for_elements(url_html_live, "span.amount") |> 
         html_text2() 
       
       #get buttons
-      buttons <- wait_for_elements(url_html_live, "button.tileNicotine-root-syX span") |> 
-        html_text2() |> 
-        stringr::str_flatten_comma()
+      buttons1 <- wait_for_elements(url_html_live, "select#Option-template--16181853814923__main-product-0") |> 
+        html_text2() 
       
+      buttons2 <- wait_for_elements(url_html_live, "select#Option-template--16181853814923__main-product-1") |> 
+        html_text2() 
+      
+      buttons <- str_flatten(string = c(buttons1, buttons2), collapse = " \n ")
+
       #get prod details
-      details1 <- wait_for_elements(url_html_live, ".richContent-root-CMO p") |> 
-        html_text2() %>% paste(collapse = "| ")
-      #some details are in separate lists so cannot be extracted with ".richContent-root-CMO p" above
-      details2 <- wait_for_elements(url_html_live, ".richContent-root-CMO p + ul") |> 
-        html_text2() %>% paste(collapse = "| ")
-      #and again some details cannot be extracted with above so add this too
-      details3 <- wait_for_elements(url_html_live, "div.richContent-root-CMO") |> 
-        html_text2() %>% paste(collapse = "| ")
-      
-      details <- paste(details1,details2,details3,collapse = "| ")
-      
-      
+      details <- wait_for_elements(url_html_live, "div.metafield-rich_text_field") |> 
+        html_text2() |> 
+        str_flatten(collapse = "\n")
+
       return(list(name = name, category = category, price = price, buttons = buttons, details = details))  #return extracted data and end the loop
     }, silent = TRUE) #end of try with error messages suppressed
     
