@@ -46,17 +46,24 @@ price <- url_html_live |>
 
 if (vctrs::vec_is_empty(price)) price <- NA
 
-price
-
 #buttons
-buttons <- url_html_live |>
-  html_elements("button.tileNicotine-root-syX span") |> 
+buttons1 <- url_html_live |>
+  html_elements("select#Option-template--16181853814923__main-product-0") |> 
   html_text2() |>
   stringr::str_flatten_comma()
 
-if (vctrs::vec_is_empty(buttons)) buttons <- NA
+if (vctrs::vec_is_empty(buttons1)) buttons1 <- NA
 
-buttons
+buttons1
+
+buttons2 <- url_html_live |>
+  html_elements("select#Option-template--16181853814923__main-product-1") |> 
+  html_text2() |>
+  stringr::str_flatten_comma()
+
+if (vctrs::vec_is_empty(buttons2)) buttons2 <- NA
+
+buttons <- list(buttons1, buttons2)
 
 #details
 details <- url_html_live |> 
