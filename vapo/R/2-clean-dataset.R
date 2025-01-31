@@ -37,11 +37,10 @@ vapo_cleaned <- vapo_scraped |>
   mutate(disposable_keyword = str_detect(details_text, "(?i)(disposable)") | str_detect(name_text, "(?i)(disposable)")) |> 
   
   #flavour
-  rowwise() |> 
-  mutate(name_length = str_count(name, "\\|") + 1) |> 
-  mutate(flavours_text = ifelse(name_length == 2, str_extract(name, ".*(?= \\|)"), NA)) |> 
+  mutate(name_length = str_count(name_text, "\\|") + 1) |> 
+  mutate(name_2nd = str_extract(name_text, ".*(?= \\|)")) |> 
+  mutate(flavours_text = ifelse(name_length == 2, str_extract(name_text, ".*(?= \\|)"), NA)) |> 
   select(-name_length) |>
-  ungroup() |> 
 
   # mutate(flavours_text = str_extract(details_text2, "(?i)(Flavor Profile:|Flavour Profile:|Flavor:|Flavour:|Flavors Profile:|flavours_text Profile:|Flavors:|flavours_text:)(.*?)(?=\n|\\|)")) |> 
   # mutate(flavours_text = str_remove(flavours_text, "(?i)(Flavor Profile:|Flavour Profile:|Flavor:|Flavour:|Flavors Profile:|flavours_text Profile:|Flavors:|flavours_text:)")) |>

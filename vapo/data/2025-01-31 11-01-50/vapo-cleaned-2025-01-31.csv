@@ -1,5 +1,5 @@
-ais,name_text,category_text,price_text,price_num,flavours_text,flavours_each_approved,flavours_count_approx,vgpg_text,nicotine_size_num,nicotine_num,nicotine_min,nicotine_max,nicotine_approved,size_min,size_max,disposable_keyword,url,buttons_text,details_text
-https://www.vapo.co.nz,Tobacco | VAPO E-Liquid,VAPO,$20.00,20,Peppermint,TRUE,1,35/65,,,,,TRUE,,,FALSE,https://www.vapo.co.nz/Tobacco | VAPO E-Liquid,"30ml 100ml 
+ais,name_text,category_text,price_text,price_num,flavours_text,flavours_each_approved,flavours_count_approx,vgpg_text,nicotine_size_num,nicotine_num,nicotine_min,nicotine_max,nicotine_approved,size_min,size_max,disposable_keyword,url,buttons_text,details_text,name_2nd
+https://www.vapo.co.nz,Tobacco | VAPO E-Liquid,VAPO,$20.00,20,Tobacco,TRUE,1,35/65,,,,,TRUE,,,FALSE,https://www.vapo.co.nz/Tobacco | VAPO E-Liquid,"30ml 100ml 
  18mg/mL 12mg/mL 9mg/mL 6mg/mL 3mg/mL 0mg/mL","Tobacco is smooth and subtle. This go-to fan favourite is a reliable classic. Whether you're a seasoned pro or a newcomer to the vaping world, our Tobacco e-liquid offers a refined taste that's sure to satisfy. 
 
 VAPO E-Liquid is formulated to the highest standards by Myriad Pharmaceuticals in an ISO7 clean room right here in New Zealand. Our e-liquid is independently tested to ensure no traces of diacetyl or acetyl propionyl are detected in our flavours.
@@ -15,8 +15,8 @@ PG/VG Ratio
 6mg/mL 30:70
 9mg/mL 30:70
 12mg/mL 35/65
-18mg/mL 40:60"
-https://www.vapo.co.nz,Tobacco | Bud Replacement Pod 2-Pack,Bud,$24.99,24.99,Peppermint,TRUE,1,,,,,,TRUE,,,TRUE,https://www.vapo.co.nz/Tobacco | Bud Replacement Pod 2-Pack,,"Bud Tobacco is for our buds who love smooth, earthy classic tobacco. The rich, smoky flavour is ideal for those transitioning away from cigarettes.
+18mg/mL 40:60",Tobacco
+https://www.vapo.co.nz,Tobacco | Bud Replacement Pod 2-Pack,Bud,$24.99,24.99,Tobacco,TRUE,1,,,,,,TRUE,,,TRUE,https://www.vapo.co.nz/Tobacco | Bud Replacement Pod 2-Pack,,"Bud Tobacco is for our buds who love smooth, earthy classic tobacco. The rich, smoky flavour is ideal for those transitioning away from cigarettes.
 
 You may be familiar with Bud disposables, but it’s time to get buddy-buddy with Bud Pods!
 
@@ -41,7 +41,7 @@ E-liquid Capacity: 7.0ml
 
 Bud’s coil boasts superior functionality through its innovative mesh design, optimising airflow and heat distribution for unparalleled performance. This advanced coil technology enhances flavour consistency and ensures efficient e-liquid saturation, producing impressive vapour.
 
-Enjoy a fulfilling vaping experience with the high-performing Bud, leveraging cutting-edge mesh coil technology for optimal flavour and longevity."
+Enjoy a fulfilling vaping experience with the high-performing Bud, leveraging cutting-edge mesh coil technology for optimal flavour and longevity.",Tobacco
 https://www.vapo.co.nz,Peppermint | solo Disposable Vape,solo,$9.99,9.99,Peppermint,TRUE,1,,,,,,TRUE,,,TRUE,https://www.vapo.co.nz/Peppermint | solo Disposable Vape,20mg/mL,"solo Peppermint is a delightful blend of minty freshness and subtle sweetness. Each draw features vibrant, true-to-tase peppermint flavour with an intensely cool edge. 
 
 solo Spearmint captures the essence of crisp, clean, freshly picked spearmint leaves, offering a satisfying burst of coolness with every draw. Immerse your senses in the aroma and delicious taste of spearmint. 
@@ -69,4 +69,4 @@ Utilising a superior mesh coil, optimised for longevity and engineered for enhan
 
 The upgraded mesh coil combines efficiency and consistency, allowing users to enjoy improved vapour production and intensely satisfying flavour without sacrificing power, thanks to the mesh coil’s ability to rapidly reach the optimal vaping temperature.
 
-Enjoy long-lasting, smooth draws and a mess-free experience."
+Enjoy long-lasting, smooth draws and a mess-free experience.",Peppermint
