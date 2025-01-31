@@ -20,7 +20,7 @@ name
 
 #brand 
 brand <- url_html_live |> 
-  html_elements("p.product--text")  |> 
+  html_elements("a.product--text")  |> 
   html_text2() |> 
   str_sub(4) |> #remove ' by'  
   str_trim()
