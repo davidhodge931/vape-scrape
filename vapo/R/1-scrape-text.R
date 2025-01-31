@@ -39,8 +39,8 @@ urls <- urls |> pull()
 
 ################################################################################
 # use for testing
-urls <- c("https://www.vapo.co.nz/products/vapo-eliquid-tobacco",
-          "https://www.vapo.co.nz/products/hola-cola-cherry")
+# urls <- c("https://www.vapo.co.nz/products/vapo-eliquid-tobacco",
+#           "https://www.vapo.co.nz/products/hola-cola-cherry")
 ################################################################################
 
 #show the polite scraping settings for this page - suggests 5 second delay in this case
