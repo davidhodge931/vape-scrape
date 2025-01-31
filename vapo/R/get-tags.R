@@ -3,7 +3,7 @@ library(chromote)
 library(rvest)
 
 url <- "https://www.vapo.co.nz/products/vapo-eliquid-tobacco"
-
+browseURL(url)
 url_html_live <- url |> 
   read_html_live()
 
@@ -63,7 +63,7 @@ buttons2 <- url_html_live |>
 
 if (vctrs::vec_is_empty(buttons2)) buttons2 <- NA
 
-buttons <- list(buttons1, buttons2)
+buttons <- str_flatten(string = c(buttons1, buttons2), collapse = " \n ")
 
 #details
 details <- url_html_live |> 
@@ -77,7 +77,7 @@ tibble(
   brand = brand,
   category = category,
   price = price,
-  # buttons = buttons,
+  buttons = buttons,
   details = details,
 ) 
 
