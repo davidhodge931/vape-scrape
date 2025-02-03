@@ -7,7 +7,7 @@ url <- "https://www.vapo.co.nz/products/bud-replacement-pod-tobacco"
 url <- "https://www.vapo.co.nz/products/solo-peppermint-disposable-vape" 
 url <- "https://www.vapo.co.nz/products/vapo-eliquid-tobacco"
 
-browseURL(url)
+# browseURL(url)
 
 url_html_live <- url |> 
   read_html_live()

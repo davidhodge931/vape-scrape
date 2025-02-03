@@ -39,8 +39,9 @@ urls <- urls |> pull()
 
 ################################################################################
 # use for testing
-# urls <- c(urls[c(340:360)],
-#           "https://www.vapo.co.nz/salty-pulse-bar-watermelon-peach-ice-disposable-vape")
+# urls <- c("https://www.vapo.co.nz/products/vapo-eliquid-tobacco",
+#           "https://www.vapo.co.nz/products/bud-replacement-pod-tobacco",
+#           "https://www.vapo.co.nz/products/solo-peppermint-disposable-vape")
 ################################################################################
 
 folder_path <- fs::path("vapo", "data", latest_run, "images")
