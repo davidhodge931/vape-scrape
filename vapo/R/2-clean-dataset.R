@@ -23,65 +23,47 @@ latest_run <- fs::dir_ls(fs::path("vapo", "data")) |>
   pull()
 
 vapo_scraped <- read_csv(fs::path("vapo", "data", latest_run, glue::glue("vapo-scraped-{str_sub(latest_run, 1, 10)}"), ext = "csv"))  |> 
-  rename_with(\(x) glue::glue("{x}_text"))  
+  rename_with(\(x) glue::glue("{x}_text"))  |> 
+  mutate(id = row_number()) |> 
+  relocate(id)
   
-vapo_cleaned <- vapo_scraped |> 
-  mutate(details_text2 = details_text) |> 
-  mutate(details_text2 = str_remove(details_text2, "(?i)(GET FREE SHIPPING).*")) |> 
-  mutate(details_text2 = str_replace_all(details_text2, regex("mg/ml", ignore_case = TRUE), "mg/ml")) |>
-  
-  #price
+# vapo_cleaned <- 
+vapo_scraped |> 
+  #price (from the price_text tag)
   mutate(price_num = as.numeric(str_remove_all(ifelse(str_detect(price_text, "\n"), word(price_text, 2, sep = "\n"), price_text), "[\\$,]")))  |>
   
-  #disposable
-  mutate(disposable_keyword = str_detect(details_text, "(?i)(disposable)") | str_detect(name_text, "(?i)(disposable)")) |> 
+  #disposable (i.e. if the name_text contains disposable)
+  mutate(disposable_keyword = str_detect(name_text, "(?i)(disposable)")) |> 
   
-  #flavour
+  #flavour 
   mutate(name_length = str_count(name_text, "\\|") + 1) |> 
   mutate(name_2nd = str_extract(name_text, ".*(?= \\|)")) |> 
   mutate(flavours_text = ifelse(name_length == 2, str_extract(name_text, ".*(?= \\|)"), NA)) |> 
-  select(-name_length) |>
+  select(-name_length) |> 
+  
+  #pgvg (i.e. ratios in form XX:XX or XX/XX)
+  mutate(pgvg = details_text %>%
+           str_extract_all("\\b\\d{2}\\s*[:/]\\s*\\d{2}\\b") %>% # extract two-digit ratios in the format XX/XX or XX:XX
+           map(\(x) str_replace_all(x, ":", "/")) %>%
+           map_chr(\(x) paste(x, collapse = ", "))
+  ) |> #pull(details_text)
 
-  # mutate(flavours_text = str_extract(details_text2, "(?i)(Flavor Profile:|Flavour Profile:|Flavor:|Flavour:|Flavors Profile:|flavours_text Profile:|Flavors:|flavours_text:)(.*?)(?=\n|\\|)")) |> 
-  # mutate(flavours_text = str_remove(flavours_text, "(?i)(Flavor Profile:|Flavour Profile:|Flavor:|Flavour:|Flavors Profile:|flavours_text Profile:|Flavors:|flavours_text:)")) |>
-  # mutate(flavours_text = str_remove(flavours_text, "\\.")) |> 
-  # mutate(flavours_text = str_replace_all(flavours_text, ", &", ",")) |>
-  # mutate(flavours_text = str_replace_all(flavours_text, " &", ",")) |>
-  # mutate(flavours_text = str_replace_all(flavours_text, ", and ", ", ")) |>
-  # mutate(flavours_text = str_replace_all(flavours_text, " and ", ", ")) |>
-  # mutate(flavours_text = str_replace_all(flavours_text, ",,", ",")) |>
-  # mutate(flavours_text = str_replace_all(flavours_text, ";", ",")) |>
-  # mutate(details_text2 = str_remove(details_text2, "(?i)(Flavor Profile:|Flavour Profile:|Flavor:|Flavour:|Flavors Profile:|flavours_text Profile:|Flavors:|flavours_text:)(.*?)(?=\n|\\|)")) |>
-  
-  #vgpg_text
-  mutate(vgpg_text = purrr::map(str_extract_all(details_text, "\\b\\d+/\\d+\\b"), unique)) |> 
-  mutate(vgpg_text = ifelse(vgpg_text == "character(0)", NA_character_,  vgpg_text)) |> 
-  mutate(vgpg_text = str_remove_all(vgpg_text, 'c\\(|\\)|"')) |> 
-  mutate(details_text2 = str_remove(details_text2, "(?i)(VG/PG:|PG/VG:|VG/PG ratio:|PG/VG ratio:.*?)(?=\\n|\\|)")) |>
-  
-  #size
+  #size (i.e extract from buttons)
   mutate(
     # Extract the size information (everything after "Size:" and up to the next newline or the end of the string)
-    size_values_details = str_trim(str_extract(details_text2, "(?i)Size:.*?(?=\\n|$)")),
+    size_values_details = NA, #str_trim(str_extract(details_text, "(?i)Size:.*?(?=\\n|$)")),
     # Extract all numeric values for the sizes (ignoring 'mL' or 'ml')
-    size_num_details = str_extract_all(size_values_details, "\\d+(\\.\\d+)?(?=\\s?[mM][lL])") |> 
+    size_num_details = str_extract_all(buttons_text, "(?i)\\b\\d+(?=\\s*ml\\b(?!\\s*/?mg))") |>
       map(~ as.double(.)),
     # Calculate min and max for each vector of sizes
     size_min_details = map_dbl(size_num_details, ~ min(.x, na.rm = TRUE)),
     size_max_details = map_dbl(size_num_details, ~ max(.x, na.rm = TRUE))
   ) |> 
+  mutate(size_min_details = ifelse(is.infinite(size_min_details), NA, size_min_details)) |> 
+  mutate(size_max_details = ifelse(is.infinite(size_max_details), NA, size_max_details)) |> #glimpse()
 
-  mutate(size_values_details = str_extract(details_text2, "(?i)(Size:.*?)(?=\\n|\\|)")) |> 
-  mutate(size_values_details = str_remove(size_values_details, ", Made in .*")) |>
-  mutate(size_values_details = str_remove(size_values_details, "Size: ")) |> 
-  mutate(size_values_details = str_replace(size_values_details, "/", ", ")) |>   
-  
-  
-  # mutate(size_num_details = size_values_details |> str_extract_all("\\d+(\\.\\d+)?(?=ml)") %>% map(\(x) as.double(x))) |>
-  # mutate(size_num_details = size_values_details |> str_extract_all("\\d+(\\.\\d+)?(?=ml)") %>% map(\(x) as.double(x))) |>
-  
-  # vapo_cleaned |> select(size_values_details) |> 
-  mutate(size_num_details = size_values_details |> str_extract_all("\\d+(\\.\\d+)?(?=ml)") %>% str_replace_all("(?i)[,ml]", "") |> map(\(x) as.double(x))) |>
+
+  mutate(size_num_details = details_text |> str_extract_all("\\d+(\\.\\d+)?(?=ml)") %>% str_replace_all("(?i)[,ml]", "") |> map(\(x) as.double(x))) |> glimpse()
   
   # mutate(size_num_details = as.numeric(str_replace_all(size_values_details, "[,mL]", ""))) |> filter(!is.na(size_values_details)) 
   
@@ -126,7 +108,7 @@ vapo_cleaned <- vapo_scraped |>
   mutate(across(c(size_min, size_max), \(x) ifelse(is.infinite(x), NA, x)))  |> 
 
   #nicotine
-  mutate(nicotine_details = str_extract(details_text2, "(?i)(nicotine\\s+(concentration|strength)?\\s*[:]?\\s*(\\d+\\.?\\d*)\\s*mg/ml)")) |> 
+  mutate(nicotine_details = str_extract(details_text, "(?i)(nicotine\\s+(concentration|strength)?\\s*[:]?\\s*(\\d+\\.?\\d*)\\s*mg/ml)")) |> 
   mutate(nicotine_details = str_remove(nicotine_details, "(?i)(Caution:.*)")) |> 
   mutate(nicotine_details = str_remove(nicotine_details, "(?i)(Specifications:.*)")) |>
   mutate(nicotine_details = str_remove(nicotine_details, "(?i)(Pod Capacity:.*)")) |> 
@@ -194,7 +176,7 @@ vapo_cleaned <- vapo_scraped |>
   ) |> 
   
   #clean-up
-  select(-details_text2, -ends_with("details"), -ends_with("buttons")) |> 
+  select(-ends_with("details"), -ends_with("buttons")) |> 
   mutate(
     ais = "https://www.vapo.co.nz",
     url = glue::glue("https://www.vapo.co.nz/{name_text}")) |> 
