@@ -47,45 +47,52 @@ vapo_scraped |>
            map(\(x) str_replace_all(x, ":", "/")) %>%
            map_chr(\(x) paste(x, collapse = ", "))
   ) |> #pull(details_text)
-
-  #size (i.e extract from buttons)
+  
+  # nicotine concentration 
+  # (i.e. from buttons, numbers preceding mg/ml. Otherwise use details. Safe for whitespace, decimal points, case etc)
+  mutate(nicotine_num_buttons = str_extract_all(buttons_text, regex("[-+]?\\d*\\.\\d+|\\d+(?=\\s*mg/ml)", ignore_case = TRUE))) |> 
+  mutate(nicotine_min_buttons = map_dbl(nicotine_num_buttons, \(x) min(as.numeric(x), na.rm = TRUE))) |>
+  mutate(nicotine_max_buttons = map_dbl(nicotine_num_buttons, \(x) max(as.numeric(x), na.rm = TRUE))) |>
+  
+  mutate(nicotine_num_details = str_extract_all(details_text, regex("[-+]?\\d*\\.\\d+|\\d+(?=\\s*mg/ml)", ignore_case = TRUE))) |> 
+  mutate(nicotine_min_details = map_dbl(nicotine_num_details, \(x) min(as.numeric(x), na.rm = TRUE))) |>
+  mutate(nicotine_max_details = map_dbl(nicotine_num_details, \(x) max(as.numeric(x), na.rm = TRUE))) |>
+  
   mutate(
-    # Extract the size information (everything after "Size:" and up to the next newline or the end of the string)
-    size_values_details = NA, #str_trim(str_extract(details_text, "(?i)Size:.*?(?=\\n|$)")),
-    # Extract all numeric values for the sizes (ignoring 'mL' or 'ml')
-    size_num_details = str_extract_all(buttons_text, "(?i)\\b\\d+(?=\\s*ml\\b(?!\\s*/?mg))") |>
-      map(~ as.double(.)),
-    # Calculate min and max for each vector of sizes
-    size_min_details = map_dbl(size_num_details, ~ min(.x, na.rm = TRUE)),
-    size_max_details = map_dbl(size_num_details, ~ max(.x, na.rm = TRUE))
+    nicotine_num = case_when(
+      !is.na(nicotine_num_buttons) ~ nicotine_num_buttons,
+      !is.na(nicotine_num_details) ~ nicotine_num_details,
+      TRUE ~ NA,
+    )
+  ) |>
+  mutate(
+    nicotine_min = case_when(
+      !is.na(nicotine_min_buttons) ~ nicotine_min_buttons,
+      !is.na(nicotine_min_details) ~ nicotine_min_details,
+      TRUE ~ NA,
+    )
   ) |> 
-  mutate(size_min_details = ifelse(is.infinite(size_min_details), NA, size_min_details)) |> 
-  mutate(size_max_details = ifelse(is.infinite(size_max_details), NA, size_max_details)) |> #glimpse()
-
-
-  mutate(size_num_details = details_text |> str_extract_all("\\d+(\\.\\d+)?(?=ml)") %>% str_replace_all("(?i)[,ml]", "") |> map(\(x) as.double(x))) |> glimpse()
+  mutate(
+    nicotine_max = case_when(
+      !is.na(nicotine_max_buttons) ~ nicotine_max_buttons,
+      !is.na(nicotine_max_details) ~ nicotine_max_details,
+      TRUE ~ NA,
+    )
+  ) |> #glimpse() 
+  mutate(across(matches("min|max"), \(x) ifelse(is.infinite(x), NA_real_, x))) |> 
   
-  # mutate(size_num_details = as.numeric(str_replace_all(size_values_details, "[,mL]", ""))) |> filter(!is.na(size_values_details)) 
+  # size
+  # (i.e. from buttons, numbers preceding ml. Otherwise use details. Safe for whitespace, decimal points, case etc)
+  mutate(size_num_buttons = str_extract_all(buttons_text, regex("[-+]?\\d*\\.\\d+|\\d+(?=\\s*ml)", ignore_case = TRUE))) |> 
+  mutate(size_min_buttons = map_dbl(size_num_buttons, \(x) min(as.numeric(x), na.rm = TRUE))) |>
+  mutate(size_max_buttons = map_dbl(size_num_buttons, \(x) max(as.numeric(x), na.rm = TRUE))) |>
   
-  mutate(size_min_details = map_dbl(size_num_details, min)) |>
-  mutate(size_max_details = map_dbl(size_num_details, max)) |>
+  mutate(size_num_details = str_extract_all(details_text, regex("[-+]?\\d*\\.\\d+|\\d+(?=\\s*ml)", ignore_case = TRUE))) |> 
+  mutate(size_min_details = map_dbl(size_num_details, \(x) min(as.numeric(x), na.rm = TRUE))) |>
+  mutate(size_max_details = map_dbl(size_num_details, \(x) max(as.numeric(x), na.rm = TRUE))) |>
   
   mutate(
-    size_buttons = buttons_text |> 
-      str_split(", ") %>%
-      purrr::map(\(x) str_subset(x, regex("\\dml$", ignore_case = TRUE))) %>%
-      purrr::map_chr(\(x) paste(x, collapse = ", "))
-  ) |> 
-  
-  mutate(size_values_buttons = ifelse(size_buttons == "", NA, size_buttons)) |>
-  # mutate(size_values_buttons = ifelse(size_buttons == "" | category_text != "E-Liquids", NA, size_buttons)) |>
-  
-  mutate(size_num_buttons = size_values_buttons |> str_extract_all("\\d+(\\.\\d+)?(?=ml)") %>% map(\(x) as.double(x))) |>
-  mutate(size_min_buttons = map_dbl(size_num_buttons, min)) |>
-  mutate(size_max_buttons = map_dbl(size_num_buttons, max)) |> 
-  
-  mutate(
-    nicotine_size_num = case_when(
+    size_num = case_when(
       !is.na(size_num_buttons) ~ size_num_buttons,
       !is.na(size_num_details) ~ size_num_details,
       TRUE ~ NA,
@@ -104,30 +111,88 @@ vapo_scraped |>
       !is.na(size_max_details) ~ size_max_details,
       TRUE ~ NA,
     )
-  ) |> 
-  mutate(across(c(size_min, size_max), \(x) ifelse(is.infinite(x), NA, x)))  |> 
+  ) |> #glimpse() 
+  mutate(across(matches("min|max"), \(x) ifelse(is.infinite(x), NA_real_, x))) |> glimpse()
 
+###############################################################################################################
+###############################################################################################################
+
+
+
+
+
+# ifelse(is.infinite(size_min_details), NA, size_min_details  
+
+  # size (i.e. from buttons, numbers preceding ml)
+  mutate(size_values_buttons = str_extract_all(buttons_text, regex("\\d+(?=\\s*ml)", ignore_case = TRUE))) |> 
+  mutate(size_min_buttons = map_dbl(size_values_buttons, \(x) min(as.numeric(x), na.rm = TRUE))) |>
+  mutate(size_max_buttons = map_dbl(size_values_buttons, \(x) max(as.numeric(x), na.rm = TRUE))) 
+
+
+
+
+
+  #size (i.e extract from buttons)
+  mutate(
+    # Extract the size information (everything after "Size:" and up to the next newline or the end of the string)
+    size_values_details = NA, #str_trim(str_extract(details_text, "(?i)Size:.*?(?=\\n|$)")),
+    # Extract all numeric values for the sizes (ignoring 'mL' or 'ml')
+    size_num_details = str_extract_all(buttons_text, "(?i)\\b\\d+(?=\\s*ml\\b(?!\\s*/?mg))") |>
+      map(~ as.double(.)),
+    # Calculate min and max for each vector of sizes
+    size_min_details = map_dbl(size_num_details, ~ min(.x, na.rm = TRUE)),
+    size_max_details = map_dbl(size_num_details, ~ max(.x, na.rm = TRUE))
+  ) |> 
+  mutate(size_min_details = ifelse(is.infinite(size_min_details), NA, size_min_details)) |> 
+  mutate(size_max_details = ifelse(is.infinite(size_max_details), NA, size_max_details)) |> #glimpse()
+
+  mutate(size_values_details = details_text |> str_extract_all("\\d+(\\.\\d+)?(?=ml)") %>% str_replace_all("(?i)[,ml]", "") |> map(\(x) as.double(x))) |>
+  #could get any size info from details text field - and then use this if no buttons size info (see shosha code)
+  
   #nicotine
-  mutate(nicotine_details = str_extract(details_text, "(?i)(nicotine\\s+(concentration|strength)?\\s*[:]?\\s*(\\d+\\.?\\d*)\\s*mg/ml)")) |> 
-  mutate(nicotine_details = str_remove(nicotine_details, "(?i)(Caution:.*)")) |> 
-  mutate(nicotine_details = str_remove(nicotine_details, "(?i)(Specifications:.*)")) |>
-  mutate(nicotine_details = str_remove(nicotine_details, "(?i)(Pod Capacity:.*)")) |> 
-  mutate(nicotine_details = str_extract(nicotine_details, "^[^|]+")) |> 
-  mutate(nicotine_details = str_remove(nicotine_details, "\\(.*")) |>
-  mutate(nicotine_values_details = word(nicotine_details, -1, sep = ": ")) |>
-  mutate(nicotine_num_details = nicotine_values_details |> str_extract_all("\\d+(\\.\\d+)?(?=mg/ml)") %>% map(\(x) as.double(x))) |>
-  mutate(nicotine_min_details = map_dbl(nicotine_num_details, min)) |>
-  mutate(nicotine_max_details = map_dbl(nicotine_num_details, max)) |>
-  mutate(nicotine_values_details = str_replace_all(nicotine_values_details, "\\s*[-–—]+\\s*", ", ")) |>
+
+  
+  # mutate(nicotine_details = str_extract(details_text, "(?i)(nicotine\\s+(concentration|strength)?\\s*[:]?\\s*(\\d+\\.?\\d*)\\s*mg/ml)")) |> 
+  # mutate(nicotine_details = str_remove(nicotine_details, "(?i)(Caution:.*)")) |> 
+  # mutate(nicotine_details = str_remove(nicotine_details, "(?i)(Specifications:.*)")) |>
+  # mutate(nicotine_details = str_remove(nicotine_details, "(?i)(Pod Capacity:.*)")) |> 
+  # mutate(nicotine_details = str_extract(nicotine_details, "^[^|]+")) |> 
+  # mutate(nicotine_details = str_remove(nicotine_details, "\\(.*")) |>
+  # mutate(nicotine_values_details = word(nicotine_details, -1, sep = ": ")) |>
+  # mutate(nicotine_num_details = nicotine_values_details |> str_extract_all("\\d+(\\.\\d+)?(?=mg/ml)") %>% map(\(x) as.double(x))) |>
+  # mutate(nicotine_min_details = map_dbl(nicotine_num_details, min)) |>
+  # mutate(nicotine_max_details = map_dbl(nicotine_num_details, max)) |>
+  # mutate(nicotine_values_details = str_replace_all(nicotine_values_details, "\\s*[-–—]+\\s*", ", ")) |>
   
   mutate(
     nicotine_values_buttons = buttons_text |> 
       str_split(", ") %>%
-      purrr::map(\(x) str_subset(x, regex("\\dmg/ml$", ignore_case = TRUE))) %>%
+      purrr::map(\(x) str_subset(x, regex("\\b(\\d+)\\s*mg/ml\\b", ignore_case = TRUE))) %>%
       purrr::map_chr(\(x) paste(x, collapse = ", "))
-  ) |> 
-  mutate(nicotine_values_buttons = ifelse(nicotine_values_buttons == "" | category_text != "E-Liquids", NA, nicotine_values_buttons)) |>
-  mutate(nicotine_num_buttons = nicotine_values_buttons |> str_extract_all("\\d+(\\.\\d+)?(?=mg/ml)") %>% map(\(x) as.double(x))) |>
+    ) |> 
+   mutate(nicotine_values_buttons = ifelse(nicotine_values_buttons == "", NA, nicotine_values_buttons)) |>
+  glimpse()
+  
+# 
+# Extract all matches
+# matches <- str_extract_all(text, regex(pattern, ignore_case = TRUE))
+# pattern <- "\\b(\\d+)\\s*mg/ml\\b"
+# 
+# # Extract only the numeric values using tidyverse functions
+# tibble(text = text) %>%
+#   mutate(text = str_match_all(text, regex(pattern, ignore_case = TRUE)) %>% # Extract matches
+#            map(\(x) x[, 2] %>% as.numeric()) %>% # Extract the captured group (numbers) and convert to numeric
+#            set_names(seq_along(text)) # Optional: Add names to the list for clarity
+#   ) #|> View()
+
+
+  
+  # glimpse()
+  mutate(nicotine_num_buttons = nicotine_values_buttons |> 
+           str_extract_all("\\b(\\d+)\\s*mg/ml\\b") %>% 
+           str_remove_all(pattern = "mg/ml") |> 
+           map(\(x) as.double(x))) |>
+  glimpse()
   mutate(nicotine_min_buttons = map_dbl(nicotine_num_buttons, min)) |>
   mutate(nicotine_max_buttons = map_dbl(nicotine_num_buttons, max)) |>
   
@@ -153,6 +218,7 @@ vapo_scraped |>
     )
   ) |>
   mutate(across(c(nicotine_min, nicotine_max), \(x) ifelse(is.infinite(x), NA, x)))  |> 
+  glimpse()
 
   #approved
   mutate(across(where(is.character), str_trim)) |> 

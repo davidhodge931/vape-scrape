@@ -24,7 +24,7 @@ latest_run <- fs::dir_ls(fs::path("shosha", "data")) |>
 
 shosha_scraped <- read_csv(fs::path("shosha", "data", latest_run, glue::glue("shosha-scraped-{str_sub(latest_run, 1, 10)}"), ext = "csv"))  |> 
   rename_with(\(x) glue::glue("{x}_text"))  
-  
+
 shosha_cleaned <- shosha_scraped |> 
   mutate(details_text2 = details_text) |> 
   mutate(details_text2 = str_remove(details_text2, "(?i)(GET FREE SHIPPING).*")) |> 
@@ -65,7 +65,7 @@ shosha_cleaned <- shosha_scraped |>
     size_min_details = map_dbl(size_num_details, ~ min(.x, na.rm = TRUE)),
     size_max_details = map_dbl(size_num_details, ~ max(.x, na.rm = TRUE))
   ) |> 
-
+  
   mutate(size_values_details = str_extract(details_text2, "(?i)(Size:.*?)(?=\\n|\\|)")) |> 
   mutate(size_values_details = str_remove(size_values_details, ", Made in .*")) |>
   mutate(size_values_details = str_remove(size_values_details, "Size: ")) |> 
@@ -119,7 +119,7 @@ shosha_cleaned <- shosha_scraped |>
     )
   ) |> 
   mutate(across(c(size_min, size_max), \(x) ifelse(is.infinite(x), NA, x)))  |> 
-
+  
   #nicotine
   mutate(nicotine_details = str_extract(details_text2, "(?i)(nicotine\\s+(concentration|strength)?\\s*[:]?\\s*(\\d+\\.?\\d*)\\s*mg/ml)")) |> 
   mutate(nicotine_details = str_remove(nicotine_details, "(?i)(Caution:.*)")) |> 
@@ -166,7 +166,7 @@ shosha_cleaned <- shosha_scraped |>
     )
   ) |>
   mutate(across(c(nicotine_min, nicotine_max), \(x) ifelse(is.infinite(x), NA, x)))  |> 
-
+  
   #approved
   mutate(across(where(is.character), str_trim)) |> 
   
