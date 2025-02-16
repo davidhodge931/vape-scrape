@@ -28,7 +28,7 @@ vapo_scraped <- read_csv(fs::path("vapo", "data", latest_run, glue::glue("vapo-s
   relocate(id)
   
 # vapo_cleaned <- 
-vapo_scraped |> 
+d <- vapo_scraped |> 
   #price (from the price_text tag)
   mutate(price_num = as.numeric(str_remove_all(ifelse(str_detect(price_text, "\n"), word(price_text, 2, sep = "\n"), price_text), "[\\$,]")))  |>
   
@@ -46,18 +46,19 @@ vapo_scraped |>
            str_extract_all("\\b\\d{2}\\s*[:/]\\s*\\d{2}\\b") %>% # extract two-digit ratios in the format XX/XX or XX:XX
            map(\(x) str_replace_all(x, ":", "/")) %>%
            map_chr(\(x) paste(x, collapse = ", "))
-  ) |> #pull(details_text)
+  ) |> 
   
   # nicotine concentration 
   # (i.e. from buttons, numbers preceding mg/ml. Otherwise use details. Safe for whitespace, decimal points, case etc)
-  mutate(nicotine_num_buttons = str_extract_all(buttons_text, regex("[-+]?\\d*\\.\\d+|\\d+(?=\\s*mg/ml)", ignore_case = TRUE))) |> 
+  mutate(nicotine_num_buttons = str_extract_all(buttons_text, regex("\\b(\\d+\\.?\\d*)\\s*mg/ml\\b", ignore_case = TRUE))) |> 
+  mutate(nicotine_num_buttons = map(nicotine_num_buttons, ~ str_remove_all(.x, "(?i)mg/ml"))) |> 
   mutate(nicotine_min_buttons = map_dbl(nicotine_num_buttons, \(x) min(as.numeric(x), na.rm = TRUE))) |>
   mutate(nicotine_max_buttons = map_dbl(nicotine_num_buttons, \(x) max(as.numeric(x), na.rm = TRUE))) |>
-  
-  mutate(nicotine_num_details = str_extract_all(details_text, regex("[-+]?\\d*\\.\\d+|\\d+(?=\\s*mg/ml)", ignore_case = TRUE))) |> 
+  mutate(nicotine_num_details = str_extract_all(details_text, regex("\\b(\\d+\\.?\\d*)\\s*mg/ml\\b", ignore_case = TRUE))) |> 
+  mutate(nicotine_num_details = map(nicotine_num_details, ~ str_remove_all(.x, "(?i)mg/ml"))) |> 
   mutate(nicotine_min_details = map_dbl(nicotine_num_details, \(x) min(as.numeric(x), na.rm = TRUE))) |>
   mutate(nicotine_max_details = map_dbl(nicotine_num_details, \(x) max(as.numeric(x), na.rm = TRUE))) |>
-  
+  mutate(across(matches("min|max"), \(x) ifelse(is.infinite(x), NA_real_, x))) |> #glimpse()
   mutate(
     nicotine_num = case_when(
       !is.na(nicotine_num_buttons) ~ nicotine_num_buttons,
@@ -71,26 +72,27 @@ vapo_scraped |>
       !is.na(nicotine_min_details) ~ nicotine_min_details,
       TRUE ~ NA,
     )
-  ) |> 
+  )  |> 
   mutate(
     nicotine_max = case_when(
       !is.na(nicotine_max_buttons) ~ nicotine_max_buttons,
       !is.na(nicotine_max_details) ~ nicotine_max_details,
       TRUE ~ NA,
     )
-  ) |> #glimpse() 
-  mutate(across(matches("min|max"), \(x) ifelse(is.infinite(x), NA_real_, x))) |> 
-  
+  )  |> 
+
   # size
   # (i.e. from buttons, numbers preceding ml. Otherwise use details. Safe for whitespace, decimal points, case etc)
-  mutate(size_num_buttons = str_extract_all(buttons_text, regex("[-+]?\\d*\\.\\d+|\\d+(?=\\s*ml)", ignore_case = TRUE))) |> 
+
+  mutate(size_num_buttons = str_extract_all(buttons_text, regex("\\b(\\d+\\.?\\d*)\\s*ml\\b", ignore_case = TRUE))) |> 
+  mutate(size_num_buttons = map(size_num_buttons, ~ str_remove_all(.x, "(?i)ml"))) |> 
   mutate(size_min_buttons = map_dbl(size_num_buttons, \(x) min(as.numeric(x), na.rm = TRUE))) |>
   mutate(size_max_buttons = map_dbl(size_num_buttons, \(x) max(as.numeric(x), na.rm = TRUE))) |>
-  
-  mutate(size_num_details = str_extract_all(details_text, regex("[-+]?\\d*\\.\\d+|\\d+(?=\\s*ml)", ignore_case = TRUE))) |> 
+  mutate(size_num_details = str_extract_all(details_text, regex("\\b(\\d+\\.?\\d*)\\s*ml\\b", ignore_case = TRUE))) |>
+  mutate(size_num_details = map(size_num_details, ~ str_remove_all(.x, "(?i)ml"))) |> 
   mutate(size_min_details = map_dbl(size_num_details, \(x) min(as.numeric(x), na.rm = TRUE))) |>
   mutate(size_max_details = map_dbl(size_num_details, \(x) max(as.numeric(x), na.rm = TRUE))) |>
-  
+  mutate(across(matches("min|max"), \(x) ifelse(is.infinite(x), NA_real_, x))) |> #glimpse()
   mutate(
     size_num = case_when(
       !is.na(size_num_buttons) ~ size_num_buttons,
@@ -111,8 +113,9 @@ vapo_scraped |>
       !is.na(size_max_details) ~ size_max_details,
       TRUE ~ NA,
     )
-  ) |> #glimpse() 
-  mutate(across(matches("min|max"), \(x) ifelse(is.infinite(x), NA_real_, x))) |> glimpse()
+  ) 
+
+d |> glimpse()
 
 ###############################################################################################################
 ###############################################################################################################
