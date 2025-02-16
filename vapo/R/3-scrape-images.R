@@ -38,9 +38,9 @@ urls <- urls |> pull()
 
 ################################################################################
 # use for testing
-# urls <- c("https://www.vapo.co.nz/products/vapo-eliquid-tobacco",
-#           "https://www.vapo.co.nz/products/bud-replacement-pod-tobacco",
-#           "https://www.vapo.co.nz/products/solo-peppermint-disposable-vape")
+  urls <- c("https://www.vapo.co.nz/products/vapo-eliquid-tobacco",
+            "https://www.vapo.co.nz/products/bud-replacement-pod-tobacco",
+            "https://www.vapo.co.nz/products/solo-peppermint-disposable-vape")
 ################################################################################
 
 folder_path <- fs::path("vapo", "data", latest_run, "images")
@@ -53,7 +53,7 @@ print(bow("https://www.vapo.co.nz/"))
 
 
 # --- Function to wait for elements to appear when html_elements() used --------
-wait_for_elements <- function(url_html_live, selector, timeout = 3, sleep = 2 * 2) {
+wait_for_elements <- function(url_html_live, selector, timeout = 3, sleep = 2) {
   start_time <- Sys.time()
   while (TRUE) { # This sets up an infinite loop that will keep trying to extract the elements. The loop will only exit when the elements are found OR the timeout expires.
     # Try to extract the elements
@@ -80,7 +80,7 @@ wait_for_elements <- function(url_html_live, selector, timeout = 3, sleep = 2 * 
 # if chromote connection fails and uses wait_for_elements() above to wait
 # until elements are retrieved (since sometimes they are not retrieved
 # on the first go for some reason)
-get_html_with_retry <- function(url, retries = 3, delay = 5 * 2) {
+get_html_with_retry <- function(url, retries = 3, delay = 5 ) {
   
   attempt <- 1
   while(attempt <= retries) { # loop for number of iterations set in retries

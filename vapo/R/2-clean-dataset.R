@@ -128,9 +128,5 @@ vapo_cleaned  <- vapo_scraped |>
 vapo_cleaned |> glimpse()
 
 write_csv(vapo_cleaned, 
-          file = fs::path("vapo", "data", latest_run, glue::glue("{name}-cleaned-{str_sub(latest_run, 1, 10)}"), ext = "csv"),
+          file = fs::path("vapo", "data", latest_run, glue::glue("{str_to_lower(name)}-cleaned-{str_sub(latest_run, 1, 10)}"), ext = "csv"),
           na = "")
-
-openxlsx::write.xlsx(vapo_cleaned, 
-                     file = fs::path("vapo", "data", latest_run, glue::glue("vapo-cleaned-{str_sub(latest_run, 1, 10)}"), ext = "xlsx"))
-
