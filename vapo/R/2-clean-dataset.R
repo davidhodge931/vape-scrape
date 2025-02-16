@@ -1,31 +1,17 @@
 library(tidyverse)
 
+################################################################################
 name <- "Vapo"
 url <- "https://www.vapo.co.nz"
+################################################################################
 
-moh_flavours_approved   <- c("Tobacco", "Pepper", "Grape", "Strawberry", 
-                           "Menthol",	"Spice",	"Guava",	"Tropical",
-                           "Mint",	"Cappuccino",	"Kiwifruit",	"Watermelon",
-                           "Peppermint",	"Coffee",	"Lemon",	"Caramel",
-                           "Spearmint",	"Espresso",	"Lime", "Chocolate",
-                           "Almond",	"Latte",	"Lychee",	"Cream",
-                           "Hazelnut",	"Tea",	"Mango",	"Custard",
-                           "Nut",	"Apple",	"Orange",	"Honey",
-                           "Oat",	"Banana",	"Passionfruit",	"Sour",
-                           "Peanut",	"Berry",	"Peach",	"Sweet",
-                           "Pecan",	"Blackberry",	"Pear",	"Vanilla",
-                           "Cinnamon",	"Blueberry",	"Pineapple", "Unflavoured",
-                           "Clove",	"Cherry",	"Plum",	
-                           "Licorice",	"Citrus",	"Pomegranate",	
-                           "Nutmeg",	"Coconut",	"Raspberry")
-
-latest_run <- fs::dir_ls(fs::path("vapo", "data")) |>
+latest_run <- fs::dir_ls(fs::path(str_to_lower(name), "data")) |>
   as_tibble() |>
-  mutate(value = fs::path_sanitize(str_remove(value, fs::path("vapo", "data") ))) |>
+  mutate(value = fs::path_sanitize(str_remove(value, fs::path(str_to_lower(name), "data") ))) |>
   slice_max(value) |>
   pull()
 
-vapo_scraped <- read_csv(fs::path("vapo", "data", latest_run, glue::glue("vapo-scraped-{str_sub(latest_run, 1, 10)}"), ext = "csv"))  |> 
+vapo_scraped <- read_csv(fs::path(str_to_lower(name), "data", latest_run, glue::glue("vapo-scraped-{str_sub(latest_run, 1, 10)}"), ext = "csv"))  |> 
   rename_with(\(x) glue::glue("{x}_text"))  |> 
   mutate(id = row_number()) |> 
   relocate(id)
@@ -128,5 +114,5 @@ vapo_cleaned  <- vapo_scraped |>
 vapo_cleaned |> glimpse()
 
 write_csv(vapo_cleaned, 
-          file = fs::path("vapo", "data", latest_run, glue::glue("{str_to_lower(name)}-cleaned-{str_sub(latest_run, 1, 10)}"), ext = "csv"),
+          file = fs::path(str_to_lower(name), "data", latest_run, glue::glue("{str_to_lower(name)}-cleaned-{str_sub(latest_run, 1, 10)}"), ext = "csv"),
           na = "")

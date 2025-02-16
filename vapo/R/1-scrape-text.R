@@ -6,24 +6,33 @@ library(purrr)
 library(fs)
 library(polite)
 
+################################################################################
+name <- "Vapo"
+url <- "https://www.vapo.co.nz"
+test <- FALSE
+test_urls <- c("https://www.vapo.co.nz/products/vapo-eliquid-tobacco",
+          "https://www.vapo.co.nz/products/bud-replacement-pod-tobacco",
+          "https://www.vapo.co.nz/products/solo-peppermint-disposable-vape")
+################################################################################
+
 # 1: read in URL's to loop through
 # 2: read in functions to extract html elements with built in error handling/retries "wait_for_elements", and get all the data with error handling/retries and bind to list "get_html_with_retry"
 # 3: loop extract: re-initialise chromote - have a longer sleep after x iterations - save rows to csv as we go - and retry if error occurs in loop
 
-latest_run <- fs::dir_ls(fs::path("vapo", "data")) |>
+latest_run <- fs::dir_ls(fs::path(str_to_lower(name), "data")) |>
   as_tibble() |>
-  mutate(value = fs::path_sanitize(str_remove(value, fs::path("vapo", "data") ))) |>
+  mutate(value = fs::path_sanitize(str_remove(value, fs::path(str_to_lower(name), "data") ))) |>
   slice_max(value) |>
   pull()
 
-f <- fs::path("vapo", "data", latest_run, glue::glue("vapo-scraped-{str_sub(latest_run, 1, 10)}"), ext = "csv") # file path to save scraped data into
+f <- fs::path(str_to_lower(name), "data", latest_run, glue::glue("{str_to_lower(name)}-scraped-{str_sub(latest_run, 1, 10)}"), ext = "csv") # file path to save scraped data into
 f
 
 ################################################################################
 # save the sitemap locally within this folder - and name as vapo-sitemap-yyyy-mm-dd
 ################################################################################
 # read_xml("https://www.vapo.co.nz/sitemap_nz.xml") #blocked
-sitemap <- read_xml(fs::path("vapo", "data", latest_run, glue::glue("vapo-sitemap-{str_sub(latest_run, 1, 10)}"), ext = "xml"))
+sitemap <- read_xml(fs::path(str_to_lower(name), "data", latest_run, glue::glue("{str_to_lower(name)}-sitemap-{str_sub(latest_run, 1, 10)}"), ext = "xml"))
 
 nodes <- sitemap |>
   xml_children() |>
@@ -37,15 +46,10 @@ urls <- xml_text(nodes) |>
 
 urls <- urls |> pull()
 
-################################################################################
-# use for testing
-urls <- c("https://www.vapo.co.nz/products/vapo-eliquid-tobacco",
-          "https://www.vapo.co.nz/products/bud-replacement-pod-tobacco",
-          "https://www.vapo.co.nz/products/solo-peppermint-disposable-vape")
-################################################################################
+if (test) urls <- test_urls
 
 #show the polite scraping settings for this page - suggests 5 second delay in this case
-print(bow("https://www.vapo.co.nz/"))
+print(bow(url))
 
 # --- Function to wait for elements to appear when html_elements() used --------
 wait_for_elements <- function(url_html_live, selector, timeout = 3, sleep = 2) {

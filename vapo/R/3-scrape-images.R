@@ -6,15 +6,24 @@ library(purrr)
 library(fs)
 library(polite)
 
+################################################################################
+name <- "Vapo"
+url <- "https://www.vapo.co.nz"
+test <- FALSE
+test_urls <- c("https://www.vapo.co.nz/products/vapo-eliquid-tobacco",
+               "https://www.vapo.co.nz/products/bud-replacement-pod-tobacco",
+               "https://www.vapo.co.nz/products/solo-peppermint-disposable-vape")
+################################################################################
+
 image_time_start <- Sys.time()
 
-latest_run <- fs::dir_ls(fs::path("vapo", "data")) |>
+latest_run <- fs::dir_ls(fs::path(str_to_lower(name), "data")) |>
   as_tibble() |>
-  mutate(value = fs::path_sanitize(str_remove(value, fs::path("vapo", "data") ))) |>
+  mutate(value = fs::path_sanitize(str_remove(value, fs::path(str_to_lower(name), "data") ))) |>
   slice_max(value) |>
   pull()
 
-sitemap <- read_xml(fs::path("vapo", "data", latest_run, glue::glue("vapo-sitemap-{str_sub(latest_run, 1, 10)}"), ext = "xml"))
+sitemap <- read_xml(fs::path(str_to_lower(name), "data", latest_run, glue::glue("vapo-sitemap-{str_sub(latest_run, 1, 10)}"), ext = "xml"))
 
 nodes <- sitemap |>
   xml_children() |>
@@ -34,20 +43,16 @@ urls <- urls |>
   mutate(slash_count_4 = slash_count == 4) |>
   filter(slash_count_4) |>
   select(-slash_count, -slash_count_4)
+
 urls <- urls |> pull()
 
-################################################################################
-# use for testing
-  urls <- c("https://www.vapo.co.nz/products/vapo-eliquid-tobacco",
-            "https://www.vapo.co.nz/products/bud-replacement-pod-tobacco",
-            "https://www.vapo.co.nz/products/solo-peppermint-disposable-vape")
-################################################################################
+if (test) urls <- test_urls
 
-folder_path <- fs::path("vapo", "data", latest_run, "images")
+folder_path <- fs::path(str_to_lower(name), "data", latest_run, "images")
 fs::dir_create(folder_path)
 
 #show the polite scraping settings for this page - suggests 5 second delay in this case
-print(bow("https://www.vapo.co.nz/"))
+print(bow(url))
 
 
 
