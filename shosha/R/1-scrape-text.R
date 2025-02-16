@@ -48,8 +48,7 @@ urls <- urls |> pull()
 
 ################################################################################
 # use for testing
-# urls <- c(urls[c(340:360)],
-#           "https://www.shosha.co.nz/salty-pulse-bar-watermelon-peach-ice-disposable-vape")
+urls <- c("https://www.shosha.co.nz/salty-pulse-bar-watermelon-peach-ice-disposable-vape")
 ################################################################################
 
 #show the polite scraping settings for this page - suggests 5 second delay in this case

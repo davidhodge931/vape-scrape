@@ -31,13 +31,14 @@ vapo_scraped <- read_csv(fs::path("vapo", "data", latest_run, glue::glue("vapo-s
   relocate(id)
   
 vapo_cleaned  <- vapo_scraped |>
+  
   #price (from the price_text tag)
   mutate(price_num = as.numeric(str_remove_all(ifelse(str_detect(price_text, "\n"), word(price_text, 2, sep = "\n"), price_text), "[\\$,]")))  |>
   
   #disposable (i.e. if the name_text contains disposable)
   mutate(disposable_keyword = str_detect(name_text, "(?i)(disposable)")) |>
   
-  #eliquid (i.e. if the name_text contains disposable)
+  #eliquid (i.e. if the name_text contains e-liquid)
   mutate(eliquid_keyword = str_detect(name_text, "(?i)(E-Liquid)")) |> 
 
   #flavour 
@@ -127,11 +128,9 @@ vapo_cleaned  <- vapo_scraped |>
 vapo_cleaned |> glimpse()
 
 write_csv(vapo_cleaned, 
-          file = fs::path("vapo", "data", latest_run, glue::glue("vapo-cleaned-{str_sub(latest_run, 1, 10)}"), ext = "csv"),
+          file = fs::path("vapo", "data", latest_run, glue::glue("{name}-cleaned-{str_sub(latest_run, 1, 10)}"), ext = "csv"),
           na = "")
 
 openxlsx::write.xlsx(vapo_cleaned, 
                      file = fs::path("vapo", "data", latest_run, glue::glue("vapo-cleaned-{str_sub(latest_run, 1, 10)}"), ext = "xlsx"))
-
-vapo_cleaned |> glimpse()
 
