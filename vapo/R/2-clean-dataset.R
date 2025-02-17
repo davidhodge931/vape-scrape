@@ -106,10 +106,8 @@ vapo_cleaned  <- vapo_scraped |>
       TRUE ~ NA,
     )
   ) |> 
-  mutate(
-    name = name,
-    url = glue::glue("{url}/{name_text}"))  |> 
-  relocate(name, url)
+  mutate(name = name)  |> 
+  relocate(name)
 
 vapo_cleaned |> glimpse()
 
