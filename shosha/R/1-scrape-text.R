@@ -118,8 +118,13 @@ get_html_with_retry <- function(url, retries = 3, delay = 5 * 2) {
       
       details <- paste(details1,details2,details3,collapse = "| ")
       
+      #get image URL
+      image <- wait_for_elements(url_html_live, "div.carousel2-imageContainer-Xbc img") |>
+        html_attr("src")
+      image_url <- image[grepl("^https?://", image)][1] #get the first URL from the extracted html elements
       
-      return(list(name = name, category = category, price = price, buttons = buttons, details = details))  #return extracted data and end the loop
+      return(list(name = name, category = category, price = price, buttons = buttons, details = details, url = url, imageURL = image_url))  #return extracted data and end the loop #SK added url 20250218
+      
     }, silent = TRUE) #end of try with error messages suppressed
     
     # If we reach this point, the attempt failed - wait and try again - but if attempt > retries then stop with message
@@ -173,6 +178,8 @@ imap(urls, function(x, i) {
     price <- page_data$price
     buttons <- page_data$buttons
     details <- page_data$details
+    url <- page_data$url #SK added 20250218
+    imageURL <- page_data$imageURL #SK added 20250218
     
     print(paste("URL:",x))
     print(paste("Name:", name)) #so we can see how we are tracking
@@ -187,7 +194,9 @@ imap(urls, function(x, i) {
       category = category,
       price = price,
       buttons = buttons,
-      details = details
+      details = details,
+      url = url,
+      imageURL = imageURL
     )
     
     # Append to CSV (write csv if it's the first loop, otherwise append it's not the first loop - so adds new row to the existing file and re-saves)
