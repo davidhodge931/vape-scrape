@@ -111,6 +111,7 @@ vapo_cleaned  <- vapo_scraped |>
 
 vapo_cleaned |> glimpse()
 
-write_csv(vapo_cleaned, 
-          file = fs::path(str_to_lower(name), "data", latest_run, glue::glue("{str_to_lower(name)}-cleaned-{str_sub(latest_run, 1, 10)}"), ext = "csv"),
-          na = "")
+vapo_cleaned |> 
+  select(name:pgvg, nicotine_num, nicotine_min, nicotine_max, size_num, size_min, size_max) |> 
+  write_csv(file = fs::path(str_to_lower(name), "data", latest_run, glue::glue("{str_to_lower(name)}-cleaned-{str_sub(latest_run, 1, 10)}"), ext = "csv"), 
+            na = "")
